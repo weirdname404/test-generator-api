@@ -8,5 +8,11 @@ python_version = "3.6"
 
 [packages]
 requests = "*"
+flask-jsonpify = "*"
+flask-restful = "*"
+gunicorn = "*"
+flask = "*"
+sqlalchemy = "*"
+openpyxl = "*"
 
 [dev-packages]
