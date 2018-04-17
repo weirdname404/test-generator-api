@@ -1,0 +1,22 @@
+{
+    "author": "Author",
+    "creation_date": "01.01.1970",
+    "version": "1.00",
+    "GUID": "12345678123456781234567812345678",
+    "test_requirements": {
+        "N": 5,
+        "question_type": "object feature",
+        "question_form": "multiple choice",
+        "objects": [
+            "Ст4сп",
+            "05кп",
+            "20пс"
+        ],
+
+        "features_group": [
+            "Массовая доля углерода",
+            "Способ раскисления",
+            "Содержание легирующих элементов"
+        ]
+    }
+}
