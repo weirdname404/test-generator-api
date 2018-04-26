@@ -1,55 +1,66 @@
 {
 	"request_info": {
-		"author": "Author",
-		"creation_date": "01.01.1970",
-		"version": "1.00",
-		"GUID": "12345678123456781234567812345678",
-		"test_requirements": {
-			"N": 3,
-			"question_type": "object feature",
-			"question_form": "multiple choice",
-			"objects": [
-				"Ст4сп",
-				"05кп",
-				"20пс"
-			],
+	"author": "Author",
+	"creation_date": "01.01.1970",
+	"version": "1.00",
+	"guid": "2E7E22F4-5B51-4948-B120-AB21F08317DB",
+	"test_requirements": {
+		"count": 3,
+		"question_type": ["O>A"],
+		"answer_form": ["choice", "options"],
+		"objects": [
+			"Ст4сп",
+			"05кп",
+			"20пс"
+		],
 
-			"features_group": [
-				"Массовая доля углерода",
-				"Способ раскисления",
-				"Содержание легирующих элементов"
-			]
-		}
-	},
+		"attributes": [
+			"Массовая доля углерода",
+			"Способ раскисления",
+			"Содержание легирующих элементов"
+		]
+	}
+},
 
 	"questions": [{
-			"GUID": "12345678123456781234567812345679",
-			"text": "Определите верный способ раскисления у марки стали 05кп:",
-			"answer_options": [
+			"guid": "Q1_GUID",
+			"question_type": "O>A",
+			"answer_form": "choice",
+			"entity1": "E1_GUID",
+			"entity2": "E2_GUID",
+			"stem": "Определите верный способ раскисления у марки стали 05кп:",
+			"distractors": [
 				"Полуспокойная",
 				"Кипящая",
 				"Спокойная"
 			],
-			"answer_choice": "single",
-			"correct_answer": "Кипящая"
+			
+			"key": [1]
 		},
 		{
-			"GUID": "12345678123456781234567812345680",
-			"text": "Определите верную массовую долю углерода у марки стали 05кп:",
-			"answer_options": [
+			"guid": "Q2_GUID",
+			"question_type": "O>A",
+			"answer_form": "choice",
+			"entity1": "E1_GUID",
+			"entity2": "E2_GUID",
+			"stem": "Определите верную массовую долю углерода у марки стали 05кп:",
+			"distractors": [
 				"0,05-0,12",
 				"<=0,06",
 				"0,57-0,65",
 				"0,07-0,14",
 				"0,27-0,35"
 			],
-			"answer_choice": "single",
-			"correct_answer": "<=0,06"
+			"key": [1]
 		},
 		{
-			"GUID": "12345678123456781234567812345681",
-			"text": "Определите какие легирующие элементы содержатся в составе марки стали 05кп:",
-			"answer_options": [
+			"guid": "Q3_GUID",
+			"question_type": "O>A",
+			"answer_form": "options",
+			"entity1": "E1_GUID",
+			"entity2": "E2_GUID",
+			"stem": "Определите какие легирующие элементы содержатся в составе марки стали 05кп:",
+			"distractors": [
 				"Кремний",
 				"Никель",
 				"Марганец",
@@ -57,12 +68,8 @@
 				"Молибден"
 
 			],
-			"answer_choice": "several",
-			"correct_answer": [
-				"Кремний",
-				"Марганец",
-				"Хром"
-			]
+			"key": [0, 2, 3]
+
 		}
 	]
 
