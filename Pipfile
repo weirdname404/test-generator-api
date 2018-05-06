@@ -1,18 +1,17 @@
 [[source]]
-url = "https://pypi.python.org/simple"
-verify_ssl = true
 name = "pypi"
-
-[requires]
-python_version = "3.6"
+verify_ssl = true
+url = "https://pypi.python.org/simple"
 
 [packages]
-requests = "*"
-flask-jsonpify = "*"
-flask-restful = "*"
-gunicorn = "*"
-flask = "*"
 sqlalchemy = "*"
+"psycopg2-binary" = "*"
 openpyxl = "*"
+gunicorn = "*"
+"psycopg2" = "*"
+flask = "*"
+
+[requires]
+python_version = "3.5"
 
 [dev-packages]

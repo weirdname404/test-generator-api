@@ -16,6 +16,7 @@ class Test(Resource):
 
         # return json.dumps(data, encoding='utf-8')
         return json.dumps(data, ensure_ascii=False)
+        # return data
 
     def post(self):
         pass

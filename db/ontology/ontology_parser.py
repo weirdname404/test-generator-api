@@ -16,12 +16,13 @@ def parse_ontology(file_name):
     ws = load_workbook(file_name)['MVContext']
     ontology = {}
 
-    for row in ws.iter_rows(min_row=2, max_col=6, max_row=44):
+    for row in ws.iter_rows(min_row=2, max_col=12, max_row=45):
         object_features = []
         for cell in row:
             object_features.append(cell.value)
 
-        ontology[object_features[0]] = object_features[1:]
+        entity = object_features.pop(1)
+        ontology[entity] = object_features[0:]
 
     return ontology
 
