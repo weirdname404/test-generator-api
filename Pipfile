@@ -5,11 +5,11 @@ url = "https://pypi.python.org/simple"
 
 [packages]
 sqlalchemy = "*"
-"psycopg2-binary" = "*"
 openpyxl = "*"
 gunicorn = "*"
-"psycopg2" = "*"
 flask = "*"
+"psycopg2" = "*"
+"psycopg2-binary" = "*"
 
 [requires]
 python_version = "3.5"
