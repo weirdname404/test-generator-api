@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import relationship
-from base import Base
+from db_config.base import Base
 
 
 # Attribute

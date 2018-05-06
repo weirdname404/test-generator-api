@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from sqlalchemy import Column, String, Integer
-from base import Base
+from db_config.base import Base
 
 
 # Attribute
