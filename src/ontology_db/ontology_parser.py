@@ -2,12 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from openpyxl import load_workbook
-from entities.db_config.base import Base, Session, engine
-from entities.scales import Scale, Scale_value
-
-# Instead of DB we use json file to test the module
-import json
-
+from .entities.db_config.base import Base, Session, engine
+from .entities.scales import Scale, Scale_value
+from .entities.steel import Steel
+from .entities.alloying_element import Alloying_element
+from .entities.deoxidizing import Deoxidizing_type
+from .entities.entity_class import Entity_class
+from .entities.gost import Gost
+from .entities.guid import Guid
+from .entities.max_carbon_value import Max_carbon_value
+from .entities.min_carbon_value import Min_carbon_value
+from .entities.quality import Quality_type
 
 # generate database schema
 Base.metadata.create_all(engine)
@@ -17,16 +22,16 @@ session = Session()
 
 # ontology file
 FILE_NAME = './ontology.xlsm'
+ROW_MAX = 65
 
 
-# creating a dict of {scale: [values]} from ontology file
-def parse_scales(file_name):
+# parsing and inserting data about Scales from the ontology file
+def parse_insert_scales(file_name):
     # Load in the workbook
     ws = load_workbook(file_name)['Scales']
-    scales = {}
-    row_max = 65
+    scale_name = ''
 
-    for row in range(1, row_max):
+    for row in range(1, ROW_MAX):
         col = 1
 
         if ws.cell(row, col).value == 'Title':
@@ -34,35 +39,25 @@ def parse_scales(file_name):
             continue
 
         elif ws.cell(row, col).value == 'Values':
-            values = []
-
             while ws.cell(row, col + 1).value is not None:
                 col += 1
-                values.append(str(ws.cell(row, col).value))
 
-            scales[scale_name] = values[:]
+                # Create Scale_value object and insert it in DB
+                scale_value = ws.cell(row, col).value
+                session.add(Scale_value(scale_value, Scale(scale_name)))
 
         else:
             continue
 
-    return scales
-
-
-def insert_scales_data(data):
-    for scale in data.keys():
-        for value in data[scale]:
-            session.add(Scale_value(value, Scale(scale)))
-
+    # Save insert actions
     session.commit()
     session.close()
+
     print('\nScales are successfully parsed and moved to db\n')
+    test_scales()
 
 
-def parse_objects(file_name):
-    pass
-
-
-def insert_object_data(data):
+def insert_objects(data):
     pass
 
 
@@ -90,13 +85,14 @@ def test_scales():
         ontology_scales[scale_name] = values
 
     print('\n### All scales:\n', ontology_scales)
+    print('\n###Scale test finished\n')
 
 
 def test_objects():
     pass
 
 
-def clear_data(session):
+def clear_db_data(session):
     meta = Base.metadata
     for table in reversed(meta.sorted_tables):
         print('Clear table %s' % table)
@@ -105,9 +101,10 @@ def clear_data(session):
 
 
 def ontology_parser():
-    clear_data(session)
-    insert_scales_data(parse_scales(FILE_NAME))
-    test_scales()
+    clear_db_data(session)
+    parse_insert_scales(FILE_NAME)
+
+    # insert_objects(parse_objects(FILE_NAME))
 
     # for row in ws.iter_rows(min_row=1, max_col=100, max_row=100):
     #     for cell in row:
