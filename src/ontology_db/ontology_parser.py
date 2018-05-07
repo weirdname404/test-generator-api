@@ -15,7 +15,11 @@ Base.metadata.create_all(engine)
 # start session
 session = Session()
 
+# ontology file
+FILE_NAME = './ontology.xlsm'
 
+
+# creating a dict of {scale: [values]} from ontology file
 def parse_scales(file_name):
     # Load in the workbook
     ws = load_workbook(file_name)['Scales']
@@ -51,20 +55,45 @@ def insert_scales_data(data):
 
     session.commit()
     session.close()
+    print('\nScales are successfully parsed and moved to db\n')
 
 
-def test_queries():
-    scales = session.query(Scale) \
-        .join(Scale_value) \
+def parse_objects(file_name):
+    pass
+
+
+def insert_object_data(data):
+    pass
+
+
+# local tests with queries
+def test_scales():
+    ontology_scales = {}
+
+    all_scales = session.query(Scale) \
         .all()
 
-    scales_list = []
+    # set of all scale names
+    all_scale_names_set = set([i.name for i in all_scales])
 
-    print('\n### All scales:')
-    for scale in scales:
-        scales_list.append(scale.name)
+    for scale_name in all_scale_names_set:
+        scale_values = session.query(Scale_value) \
+            .join(Scale) \
+            .filter(Scale.name == scale_name) \
+            .all()
 
-    print(set(scales_list))
+        values = []
+
+        for scale_value in scale_values:
+            values.append(scale_value.value)
+
+        ontology_scales[scale_name] = values
+
+    print('\n### All scales:\n', ontology_scales)
+
+
+def test_objects():
+    pass
 
 
 def clear_data(session):
@@ -75,6 +104,10 @@ def clear_data(session):
         session.commit()
 
 
+def ontology_parser():
+    clear_data(session)
+    insert_scales_data(parse_scales(FILE_NAME))
+    test_scales()
 
     # for row in ws.iter_rows(min_row=1, max_col=100, max_row=100):
     #     for cell in row:
@@ -97,10 +130,7 @@ def clear_data(session):
 
 
 def main():
-    FILE_NAME = './ontology.xlsm'
-    # insert_scales_data(parse_scales(FILE_NAME))
-    # clear_data(session)
-    test_queries()
+    ontology_parser()
 
 
 if __name__ == '__main__':
