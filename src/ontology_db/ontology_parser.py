@@ -3,16 +3,16 @@
 
 from openpyxl import load_workbook
 from .entities.db_config.base import Base, Session, engine
-from .entities.scales import Scale, Scale_value
+from .entities.scales import Scale, ScaleValue
 from .entities.steel import Steel
-from .entities.alloying_element import Alloying_element
-from .entities.deoxidizing import Deoxidizing_type
-from .entities.entity_class import Entity_class
+from .entities.alloying_element import AlloyingElement
+from .entities.deoxidizing import DeoxidizingType
+from .entities.entity_class import EntityClass
 from .entities.gost import Gost
 from .entities.guid import Guid
-from .entities.max_carbon_value import Max_carbon_value
-from .entities.min_carbon_value import Min_carbon_value
-from .entities.quality import Quality_type
+from .entities.max_carbon_value import MaxCarbonValue
+from .entities.min_carbon_value import MinCarbonValue
+from .entities.quality import QualityType
 
 # generate database schema
 Base.metadata.create_all(engine)
@@ -25,9 +25,9 @@ FILE_NAME = './ontology.xlsm'
 ROW_MAX = 65
 
 
-# parsing and inserting data about Scales from the ontology file
+# Parsing and inserting data about Scales from the ontology file ('Scales')
 def parse_insert_scales(file_name):
-    # Load in the workbook
+    # Load in the ontology
     ws = load_workbook(file_name)['Scales']
     scale_name = ''
 
@@ -44,7 +44,7 @@ def parse_insert_scales(file_name):
 
                 # Create Scale_value object and insert it in DB
                 scale_value = ws.cell(row, col).value
-                session.add(Scale_value(scale_value, Scale(scale_name)))
+                session.add(ScaleValue(scale_value, Scale(scale_name)))
 
         else:
             continue
@@ -55,10 +55,6 @@ def parse_insert_scales(file_name):
 
     print('\nScales are successfully parsed and moved to db\n')
     test_scales()
-
-
-def insert_objects(data):
-    pass
 
 
 # local tests with queries
@@ -72,7 +68,7 @@ def test_scales():
     all_scale_names_set = set([i.name for i in all_scales])
 
     for scale_name in all_scale_names_set:
-        scale_values = session.query(Scale_value) \
+        scale_values = session.query(ScaleValue) \
             .join(Scale) \
             .filter(Scale.name == scale_name) \
             .all()
@@ -86,6 +82,45 @@ def test_scales():
 
     print('\n### All scales:\n', ontology_scales)
     print('\n###Scale test finished\n')
+
+
+# Parsing and inserting data about Steel Objects from the ontology file ('MVContext')
+def parse_insert_objects(file_name):
+    # Load in the ontology
+    ws = load_workbook(file_name)['MVContext']
+    for row in ws.iter_rows(min_row=2, max_col=9, max_row=45):
+        """
+        GUID, Name, Class,
+        Gost, DeoxidizingType, Quality,
+        AlloyingElements, MinCarbon, MaxCarbon
+        """
+        row_data = []
+
+        for cell in row:
+            row_data.append(cell.value)
+
+        # guid + name
+        steel_object = Steel(row_data[0], row_data[1], EntityClass(row_data[2]), Gost(row_data[3]),
+                             DeoxidizingType(row_data[4]), QualityType(row_data[5]), MinCarbonValue(row_data[7]),
+                             MaxCarbonValue(row_data[8]))
+
+        alloying_elements = []
+        alloying_elements_data = row_data[6]
+
+        for element_name in alloying_elements_data.split(','):
+            alloying_element = AlloyingElement(element_name)
+            alloying_elements.append(alloying_element)
+            session.add(alloying_element)
+
+        steel_object.alloying_elements = alloying_elements
+        session.add(steel_object)
+
+    # Save insert actions
+    session.commit()
+    session.close()
+
+    print('\nScales are successfully parsed and moved to db\n')
+    test_scales()
 
 
 def test_objects():

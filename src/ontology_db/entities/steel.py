@@ -27,13 +27,13 @@ class Steel(Base):
 
     guid = relationship('Guid', uselist=False, back_populates='steel')
     gost = relationship('Gost', back_populates='steels')
-    deoxidizing_type = relationship('Deoxidizing_type', back_populates='steels')
-    quality = relationship('Quality_type', back_populates='steels')
-    alloying_elements = relationship('Alloying_element', secondary=steels_alloying_elements_association,
+    deoxidizing_type = relationship('DeoxidizingType', back_populates='steels')
+    quality = relationship('QualityType', back_populates='steels')
+    alloying_elements = relationship('AlloyingElement', secondary=steels_alloying_elements_association,
                                      backref='steels')
-    min_carbon_value = relationship('Min_carbon_value', back_populates='steels')
-    max_carbon_value = relationship('Max_carbon_value', back_populates='steels')
-    entity_class = relationship('Entity_class', back_populates='steels')
+    min_carbon_value = relationship('MinCarbonValue', back_populates='steels')
+    max_carbon_value = relationship('MaxCarbonValue', back_populates='steels')
+    entity_class = relationship('EntityClass', back_populates='steels')
 
     def __init__(self, guid, name, entity_class, gost, deoxidizing_type, quality, min_carbon_value, max_carbon_value):
         self.guid = guid

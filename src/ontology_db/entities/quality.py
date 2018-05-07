@@ -7,7 +7,7 @@ from .db_config.base import Base
 
 
 # Attribute
-class Quality_type(Base):
+class QualityType(Base):
     __tablename__ = 'quality_types'
 
     id = Column(Integer, primary_key=True)

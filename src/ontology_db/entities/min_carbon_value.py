@@ -7,7 +7,7 @@ from .db_config.base import Base
 
 
 # Attribute
-class Min_carbon_value(Base):
+class MinCarbonValue(Base):
     __tablename__ = 'min_carbon_values'
 
     id = Column(Integer, primary_key=True)

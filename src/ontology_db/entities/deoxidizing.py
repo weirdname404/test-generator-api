@@ -7,7 +7,7 @@ from .db_config.base import Base
 
 
 # Attribute
-class Deoxidizing_type(Base):
+class DeoxidizingType(Base):
     __tablename__ = 'deoxidizing_types'
 
     id = Column(Integer, primary_key=True)

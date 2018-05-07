@@ -7,7 +7,7 @@ from .db_config.base import Base
 
 
 # Attribute
-class Max_carbon_value(Base):
+class MaxCarbonValue(Base):
     __tablename__ = 'max_carbon_values'
 
     id = Column(Integer, primary_key=True)

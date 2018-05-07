@@ -16,7 +16,7 @@ class Scale(Base):
         self.name = name
 
 
-class Scale_value(Base):
+class ScaleValue(Base):
     __tablename__ = 'scale_values'
 
     id = Column(Integer, primary_key=True)

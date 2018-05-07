@@ -6,7 +6,7 @@ from .db_config.base import Base
 
 
 # Attribute
-class Alloying_element(Base):
+class AlloyingElement(Base):
     __tablename__ = 'alloying_elements'
 
     id = Column(Integer, primary_key=True)
