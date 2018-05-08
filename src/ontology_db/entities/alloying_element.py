@@ -10,7 +10,7 @@ class AlloyingElement(Base):
     __tablename__ = 'alloying_elements'
 
     id = Column(Integer, primary_key=True)
-    value = Column(String)
+    name = Column(String)
 
-    def __init__(self, value):
-        self.value = value
+    def __init__(self, name):
+        self.name = name

@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from entities.alloying_element import AlloyingElement
+from entities.db_config.base import Base, Session, engine
+from entities.deoxidizing import DeoxidizingType
+from entities.entity_class import EntityClass
+from entities.gost import Gost
+from entities.guid import Guid
+from entities.max_carbon_value import MaxCarbonValue
+from entities.min_carbon_value import MinCarbonValue
+from entities.quality import QualityType
+from entities.scales import Scale, ScaleValue
+from entities.steel import Steel
 from openpyxl import load_workbook
-from .entities.db_config.base import Base, Session, engine
-from .entities.scales import Scale, ScaleValue
-from .entities.steel import Steel
-from .entities.alloying_element import AlloyingElement
-from .entities.deoxidizing import DeoxidizingType
-from .entities.entity_class import EntityClass
-from .entities.gost import Gost
-from .entities.guid import Guid
-from .entities.max_carbon_value import MaxCarbonValue
-from .entities.min_carbon_value import MinCarbonValue
-from .entities.quality import QualityType
 
 # generate database schema
 Base.metadata.create_all(engine)
@@ -29,13 +29,14 @@ ROW_MAX = 65
 def parse_insert_scales(file_name):
     # Load in the ontology
     ws = load_workbook(file_name)['Scales']
-    scale_name = ''
+    scale_object = ''
 
     for row in range(1, ROW_MAX):
         col = 1
 
         if ws.cell(row, col).value == 'Title':
             scale_name = ws.cell(row, col + 1).value
+            scale_object = Scale(scale_name)
             continue
 
         elif ws.cell(row, col).value == 'Values':
@@ -44,7 +45,7 @@ def parse_insert_scales(file_name):
 
                 # Create Scale_value object and insert it in DB
                 scale_value = ws.cell(row, col).value
-                session.add(ScaleValue(scale_value, Scale(scale_name)))
+                session.add(ScaleValue(scale_value, scale_object))
 
         else:
             continue
@@ -64,23 +65,13 @@ def test_scales():
     all_scales = session.query(Scale) \
         .all()
 
-    # set of all scale names
-    all_scale_names_set = set([i.name for i in all_scales])
+    print('\n### All scales:\n')
 
-    for scale_name in all_scale_names_set:
-        scale_values = session.query(ScaleValue) \
-            .join(Scale) \
-            .filter(Scale.name == scale_name) \
-            .all()
+    for scale in all_scales:
+        print(scale.name)
+        print([value.value for value in scale.values])
+        print('\n')
 
-        values = []
-
-        for scale_value in scale_values:
-            values.append(scale_value.value)
-
-        ontology_scales[scale_name] = values
-
-    print('\n### All scales:\n', ontology_scales)
     print('\n###Scale test finished\n')
 
 
@@ -88,43 +79,137 @@ def test_scales():
 def parse_insert_objects(file_name):
     # Load in the ontology
     ws = load_workbook(file_name)['MVContext']
+
+    # The main idea is to reuse already created objects, which will be contained in the dict 
+    value_objects = {}
+
     for row in ws.iter_rows(min_row=2, max_col=9, max_row=45):
         """
-        GUID, Name, Class,
+        The data is in the following order:
+
+        0     1     2
+        Name, GUID, Class,
+        3     4                5
         Gost, DeoxidizingType, Quality,
+        6                 7          8
         AlloyingElements, MinCarbon, MaxCarbon
         """
-        row_data = []
 
-        for cell in row:
-            row_data.append(cell.value)
+        # All data from 1 row
+        row_data = [cell.value for cell in row]
 
-        # guid + name
-        steel_object = Steel(row_data[0], row_data[1], EntityClass(row_data[2]), Gost(row_data[3]),
-                             DeoxidizingType(row_data[4]), QualityType(row_data[5]), MinCarbonValue(row_data[7]),
-                             MaxCarbonValue(row_data[8]))
+        # Guid has one-to-one relation with the steel or unique, so there will be always N guid objects.
+        steel_guid = Guid(row_data.pop(0))
+        steel_name = row_data.pop(0)
 
-        alloying_elements = []
-        alloying_elements_data = row_data[6]
+        """
+        The main idea of this part is to REUSE value objects instead of creating tons of them.
 
-        for element_name in alloying_elements_data.split(','):
-            alloying_element = AlloyingElement(element_name)
-            alloying_elements.append(alloying_element)
-            session.add(alloying_element)
+        At first we check if the object for current value was created in the past or not,
+        Then we either create an object for current value and instantly use it or just use existing one,
 
-        steel_object.alloying_elements = alloying_elements
+        After object identification and creation all necessary 
+        objects for current ROW are stored in the row_data_objs dict.
+        These objects are used to create Steel object for a current row.
+
+        The solution might be memory consuming, however we do not have any time limits 
+        for ontology parsing, due to the fact that it should be parsed only once.
+        """
+
+        row_data_objs = []
+
+        for i in range(len(row_data)):
+            current_value = row_data[i]
+
+            # check if there are any keys
+            if i not in value_objects.keys():
+                value_objects[i] = {}
+
+            # current_value is a "Element1, Element3, Element3 ..." - special treatment is required
+            if i == 4:
+                # Alloying_elements must be a list of objects - [obj1, obj2, obj3]
+                row_data_objs.append(parsing_alloying_elements(value_objects, current_value, i))
+                continue
+
+            # the case when value class was already instantiated in the past, so we should use existing object
+            if current_value in value_objects[i].keys():
+                row_data_objs.append(value_objects[i][current_value])
+
+            # in other cases, let's create a value obj and use it in the future
+            else:
+                if i == 0:
+                    value_obj = EntityClass(current_value)
+
+                elif i == 1:
+                    value_obj = Gost(current_value)
+
+                elif i == 2:
+                    value_obj = DeoxidizingType(current_value)
+
+                elif i == 3:
+                    value_obj = QualityType(current_value)
+
+                elif i == 5:
+                    value_obj = MinCarbonValue(current_value)
+
+                elif i == 6:
+                    value_obj = MaxCarbonValue(current_value)
+
+                value_objects[i][current_value] = value_obj
+                row_data_objs.append(value_obj)
+
+        # object creation
+        steel_object = Steel(steel_name, steel_guid)
+        steel_object.entity_class = row_data_objs[0]
+        steel_object.gost = row_data_objs[1]
+        steel_object.deoxidizing_type = row_data_objs[2]
+        steel_object.quality = row_data_objs[3]
+        steel_object.alloying_elements = row_data_objs[4]
+        steel_object.min_carbon_value = row_data_objs[5]
+        steel_object.max_carbon_value = row_data_objs[6]
+
         session.add(steel_object)
 
     # Save insert actions
     session.commit()
     session.close()
 
-    print('\nScales are successfully parsed and moved to db\n')
-    test_scales()
+    print('\nObjects are successfully parsed and moved to db\n')
+    test_objects()
+
+
+def parsing_alloying_elements(obj_dict, current_value, elements_key):
+    element_objs_list = []
+    alloying_elements = [i for i in current_value.split(', ')]
+
+    # check, create, use
+    for element in alloying_elements:
+        if element not in obj_dict[elements_key].keys():
+            element_obj = AlloyingElement(element)
+            obj_dict[elements_key][element] = element_obj
+
+        element_objs_list.append(obj_dict[elements_key][element])
+
+    return element_objs_list
 
 
 def test_objects():
-    pass
+    all_objects = session.query(Steel) \
+        .all()
+
+    print('\n### All objects:\n')
+    for steel in all_objects:
+        print(steel.name)
+        print(steel.guid.name)
+        print(steel.gost.name)
+        print(steel.entity_class.name)
+        print(steel.deoxidizing_type.name)
+        print(steel.quality.name)
+        print([element.name for element in steel.alloying_elements])
+        print(steel.min_carbon_value.value)
+        print(steel.max_carbon_value.value)
+        print('\n\n')
+    print('\n###Object test finished\n')
 
 
 def clear_db_data(session):
@@ -135,30 +220,25 @@ def clear_db_data(session):
         session.commit()
 
 
+def drop_tables(session):
+    engine.execute("DROP TABLE steels CASCADE")
+    engine.execute("DROP TABLE steels_alloying_elements CASCADE")
+    engine.execute("DROP TABLE quality_types CASCADE")
+    engine.execute("DROP TABLE min_carbon_values CASCADE")
+    engine.execute("DROP TABLE max_carbon_values CASCADE")
+    engine.execute("DROP TABLE guids CASCADE")
+    engine.execute("DROP TABLE gosts CASCADE")
+    engine.execute("DROP TABLE entity_classes CASCADE")
+    engine.execute("DROP TABLE deoxidizing_types CASCADE")
+    engine.execute("DROP TABLE alloying_elements CASCADE")
+    print('\nALL TABLES DROPPED\n')
+
+
 def ontology_parser():
     clear_db_data(session)
+    # drop_tables(session)
     parse_insert_scales(FILE_NAME)
-
-    # insert_objects(parse_objects(FILE_NAME))
-
-    # for row in ws.iter_rows(min_row=1, max_col=100, max_row=100):
-    #     for cell in row:
-    #         if cell.value == 'Title':
-    #             pass
-
-    #         elif cell.value == 'Values'
-
-    # ontology = {}
-
-    # for row in ws.iter_rows(min_row=2, max_col=12, max_row=45):
-    #     object_features = []
-    #     for cell in row:
-    #         object_features.append(cell.value)
-
-    #     entity = object_features.pop(1)
-    #     ontology[entity] = object_features[0:]
-
-    # return ontology
+    parse_insert_objects(FILE_NAME)
 
 
 def main():

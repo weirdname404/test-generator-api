@@ -25,4 +25,5 @@ engine = create_engine('postgresql://%s:%s@%s/%s' % (db_user, db_password, db_ur
 # Unit of Work pattern
 Session = sessionmaker(bind=engine)
 
+# AKA Data Base
 Base = declarative_base()
