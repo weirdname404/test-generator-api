@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 from flask import Flask
 from flask_restful import Api, Resource, url_for

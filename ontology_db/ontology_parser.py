@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding=utf-8
 
 from entities.alloying_element import AlloyingElement
 from entities.db_config.base import Base, Session, engine
@@ -23,6 +22,9 @@ session = Session()
 # ontology file
 FILE_NAME = './ontology.xlsm'
 ROW_MAX = 65
+
+MAX_OBJS = 45
+MAX_SCALES = 8
 
 
 # Parsing and inserting data about Scales from the ontology file ('Scales')
@@ -83,7 +85,7 @@ def parse_insert_objects(file_name):
     # The main idea is to reuse already created objects, which will be contained in the dict 
     value_objects = {}
 
-    for row in ws.iter_rows(min_row=2, max_col=9, max_row=45):
+    for row in ws.iter_rows(min_row=2, max_col=9, max_row=MAX_OBJS):
         """
         The data is in the following order:
 
