@@ -1,16 +1,16 @@
 # coding=utf-8
 
-from ontology_db.entities.alloying_element import AlloyingElement
-from ontology_db.entities.db_config.base import Base, Session, engine
-from ontology_db.entities.deoxidizing import DeoxidizingType
-from ontology_db.entities.entity_class import EntityClass
-from ontology_db.entities.gost import Gost
-from ontology_db.entities.guid import Guid
-from ontology_db.entities.max_carbon_value import MaxCarbonValue
-from ontology_db.entities.min_carbon_value import MinCarbonValue
-from ontology_db.entities.quality import QualityType
-from ontology_db.entities.scales import Scale, ScaleValue
-from ontology_db.entities.steel import Steel
+from api.ontology_db.entities.alloying_element import AlloyingElement
+from api.ontology_db.entities.db_config.base import Base, Session, engine
+from api.ontology_db.entities.deoxidizing import DeoxidizingType
+from api.ontology_db.entities.entity_class import EntityClass
+from api.ontology_db.entities.gost import Gost
+from api.ontology_db.entities.guid import Guid
+from api.ontology_db.entities.max_carbon_value import MaxCarbonValue
+from api.ontology_db.entities.min_carbon_value import MinCarbonValue
+from api.ontology_db.entities.quality import QualityType
+from api.ontology_db.entities.scales import Scale, ScaleValue
+from api.ontology_db.entities.steel import Steel
 from openpyxl import load_workbook
 
 # generate database schema

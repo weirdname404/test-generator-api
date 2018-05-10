@@ -2,10 +2,10 @@
 
 import unittest
 
-from ontology_db.entities.db_config.base import Base, Session, engine
-from ontology_db.entities.scales import Scale
-from ontology_db.entities.steel import Steel
-from ontology_db.ontology_parser import MAX_OBJS, MAX_SCALES
+from api.ontology_db.entities.db_config.base import Base, Session, engine
+from api.ontology_db.entities.scales import Scale
+from api.ontology_db.entities.steel import Steel
+from api.ontology_db.ontology_parser import MAX_OBJS, MAX_SCALES
 
 # generate database schema
 Base.metadata.create_all(engine)
