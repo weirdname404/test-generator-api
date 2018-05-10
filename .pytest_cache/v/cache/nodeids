@@ -1,0 +1,4 @@
+[
+  "tests/test_db_data.py::test_scales_data",
+  "tests/test_db_data.py::test_objects_data"
+]
