@@ -1,16 +1,16 @@
 # coding=utf-8
 
-from entities.alloying_element import AlloyingElement
-from entities.db_config.base import Base, Session, engine
-from entities.deoxidizing import DeoxidizingType
-from entities.entity_class import EntityClass
-from entities.gost import Gost
-from entities.guid import Guid
-from entities.max_carbon_value import MaxCarbonValue
-from entities.min_carbon_value import MinCarbonValue
-from entities.quality import QualityType
-from entities.scales import Scale, ScaleValue
-from entities.steel import Steel
+from ontology_db.entities.alloying_element import AlloyingElement
+from ontology_db.entities.db_config.base import Base, Session, engine
+from ontology_db.entities.deoxidizing import DeoxidizingType
+from ontology_db.entities.entity_class import EntityClass
+from ontology_db.entities.gost import Gost
+from ontology_db.entities.guid import Guid
+from ontology_db.entities.max_carbon_value import MaxCarbonValue
+from ontology_db.entities.min_carbon_value import MinCarbonValue
+from ontology_db.entities.quality import QualityType
+from ontology_db.entities.scales import Scale, ScaleValue
+from ontology_db.entities.steel import Steel
 from openpyxl import load_workbook
 
 # generate database schema
@@ -241,11 +241,3 @@ def ontology_parser():
     # drop_tables(session)
     parse_insert_scales(FILE_NAME)
     parse_insert_objects(FILE_NAME)
-
-
-def main():
-    ontology_parser()
-
-
-if __name__ == '__main__':
-    main()
