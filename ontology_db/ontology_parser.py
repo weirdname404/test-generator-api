@@ -57,11 +57,9 @@ def parse_insert_scales(file_name):
     session.close()
 
     print('\nScales are successfully parsed and moved to db\n')
-    test_scales()
 
 
-# local tests with queries
-def test_scales():
+def print_scales():
     ontology_scales = {}
 
     all_scales = session.query(Scale) \
@@ -73,8 +71,6 @@ def test_scales():
         print(scale.name)
         print([value.value for value in scale.values])
         print('\n')
-
-    print('\n###Scale test finished\n')
 
 
 # Parsing and inserting data about Steel Objects from the ontology file ('MVContext')
@@ -175,8 +171,7 @@ def parse_insert_objects(file_name):
     session.commit()
     session.close()
 
-    print('\nObjects are successfully parsed and moved to db\n')
-    test_objects()
+    print('Objects are successfully parsed and moved to db\n')
 
 
 def parse_alloying_elements(obj_dict, current_value, elements_key):
@@ -195,7 +190,7 @@ def parse_alloying_elements(obj_dict, current_value, elements_key):
     return element_objs_list
 
 
-def test_objects():
+def print_objects():
     all_objects = session.query(Steel) \
         .all()
 
@@ -210,12 +205,12 @@ def test_objects():
         print([element.name for element in steel.alloying_elements])
         print(steel.min_carbon_value.value)
         print(steel.max_carbon_value.value)
-        print('\n\n')
-    print('\n###Object test finished\n')
+        print('\n')
 
 
 def clear_db_data(session):
     meta = Base.metadata
+    print('\n')
     for table in reversed(meta.sorted_tables):
         print('Clear table %s' % table)
         session.execute(table.delete())
@@ -236,8 +231,7 @@ def drop_tables(session):
     print('\nALL TABLES DROPPED\n')
 
 
-def ontology_parser():
+def parse_ontology():
     clear_db_data(session)
-    # drop_tables(session)
     parse_insert_scales(FILE_NAME)
     parse_insert_objects(FILE_NAME)

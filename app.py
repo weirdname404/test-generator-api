@@ -1,13 +1,10 @@
 # coding=utf-8
 
 from flask import Flask
-from flask_restful import Api, Resource, url_for
-from resources.test_generator import Test
+from ontology_db.ontology_parser import parse_ontology
 
 app = Flask(__name__)
-api = Api(app)
-
-api.add_resource(Test, '/')
 
 if __name__ == '__main__':
+    # parse_ontology()
     app.run(debug=True)
