@@ -18,6 +18,7 @@ before_install:
       -d postgres
 
 install:
+  - cd test-generator-api
   - pip install pipenv
   - pipenv install --three
 
