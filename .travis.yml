@@ -1,3 +1,12 @@
+sudo: required
+
 language: python
+python: 3.5
+
+install:
+  - pip install pipenv
+
 script:
+  - pipenv install
+  - pipenv shell
   - python -m pytest -v
