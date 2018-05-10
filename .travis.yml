@@ -8,10 +8,10 @@ services:
   - docker
 
 before_install:
-  - docker run --name ontology-orm-psql \
-      -p 5432:5432 \
-      -e POSTGRES_DB=ontology-db \
-      -e POSTGRES_PASSWORD=ONTOLOGY-DB \
+  - docker run --name ontology-orm-psql
+      -p 5432:5432
+      -e POSTGRES_DB=ontology-db
+      -e POSTGRES_PASSWORD=ONTOLOGY-DB
       -d postgres
 
 install:
