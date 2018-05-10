@@ -16,7 +16,7 @@ our dockerized PostgreSQL database
 
 """
 
-db_url = 'localhost:5433'
+db_url = 'localhost:5432'
 db_name = 'ontology-db'
 db_user = 'postgres'
 db_password = 'ONTOLOGY-DB'
