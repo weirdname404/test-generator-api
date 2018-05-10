@@ -11,6 +11,7 @@ flask = "*"
 "psycopg2" = "*"
 "psycopg2-binary" = "*"
 pytest = "*"
+marshmallow = "*"
 
 [requires]
 python_version = "3.5"
