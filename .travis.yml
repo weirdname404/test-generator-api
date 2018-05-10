@@ -3,16 +3,22 @@ sudo: required
 language: python
 python: 
     - "3.5"
-    - "3.6"
 
-env:
-  global:
-    - PIPENV_VENV_IN_PROJECT=1
-    - PIPENV_IGNORE_VIRTUALENVS=1
+services:
+  - docker
+
+before_install:
+  - docker run --name ontology-orm-psql \
+      -p 5432:5432 \
+      -e POSTGRES_DB=ontology-db \
+      -e POSTGRES_PASSWORD=ONTOLOGY-DB \
+      -d postgres
 
 install:
   - pip install pipenv
 
 script:
   - pipenv install --dev --three
-  - pipenv shell python -m pytest -v
+  - pipenv shell python -c 'from ontology_db.ontology_parser import parse_ontology; parse_ontology()'
+  - python -m pytest -v
+  - exit
