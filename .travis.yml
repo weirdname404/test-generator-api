@@ -1,12 +1,19 @@
 sudo: required
 
 language: python
-python: 3.5
+python: 
+    - "3.5"
+    - "3.6"
+
+env:
+  global:
+    - PIPENV_VENV_IN_PROJECT=1
+    - PIPENV_IGNORE_VIRTUALENVS=1
 
 install:
   - pip install pipenv
 
 script:
-  - pipenv install
-  - pipenv shell
+  - pipenv install --dev --three
+  - pipenv shell -c
   - python -m pytest -v
