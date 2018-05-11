@@ -1,6 +1,7 @@
 # coding=utf-8
 
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 from api.ontology_db.entities.db_config.base import Base, Session, engine
 from api.ontology_db.entities.scales import Scale
@@ -11,6 +12,7 @@ from api.ontology_db.ontology_parser import parse_ontology
 # creating the Flask application
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+CORS(app)
 
 # if needed, generate database schema
 Base.metadata.create_all(engine)
