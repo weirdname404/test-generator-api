@@ -17,6 +17,22 @@ CORS(app)
 # if needed, generate database schema
 Base.metadata.create_all(engine)
 
+sample = {"questions": [{
+    "guid": "Q1_GUID",
+    "question_type": "O>A",
+    "answer_form": "choice",
+    "entity1": "E1_GUID",
+    "entity2": "E2_GUID",
+    "stem": "Определите верный способ раскисления у марки стали 05кп:",
+    "distractors": [
+        "Полуспокойная",
+        "Кипящая",
+        "Спокойная"
+    ],
+
+    "key": [1]
+}]}
+
 
 @app.route("/update-ontology")
 def get_ontology():
@@ -39,12 +55,14 @@ def get_entities():
 
     entities = {'Objects': objects, 'Attributes': scales, 'Classes': classes}
 
-    # # transforming into JSON-serializable objects
-    # schema = ResponseEntitiesSchema(many=True)
-    # entities = schema.dump(objects)
-
-    # serializing as JSON
     return jsonify(entities)
+
+
+@app.route('/generate-test', methods=['POST'])
+def generate_test():
+    user_request = {'request_info': request.get_json()}
+
+    return jsonify(user_request, sample)
 
 
 if __name__ == '__main__':
