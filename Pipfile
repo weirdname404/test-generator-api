@@ -8,11 +8,10 @@ sqlalchemy = "*"
 openpyxl = "*"
 gunicorn = "*"
 flask = "*"
-"psycopg2" = "*"
-"psycopg2-binary" = "*"
 pytest = "*"
 marshmallow = "*"
 flask-cors = "*"
+"psycopg2-binary" = "*"
 
 [requires]
 python_version = "3.5"
