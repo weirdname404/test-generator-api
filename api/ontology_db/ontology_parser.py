@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from api.ontology_db.entities.alloying_element import AlloyingElement
-from api.ontology_db.entities.db_config.base import Base, Session, engine
+from api.ontology_db.db_config.base import Base, Session, engine
 from api.ontology_db.entities.deoxidizing import DeoxidizingType
 from api.ontology_db.entities.entity_class import EntityClass
 from api.ontology_db.entities.gost import Gost

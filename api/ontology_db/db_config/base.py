@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -16,11 +17,19 @@ our dockerized PostgreSQL database
 
 """
 
+SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+
+# Local setup
 db_url = 'localhost:5432'
 db_name = 'ontology-db'
 db_user = 'postgres'
 db_password = 'ONTOLOGY-DB'
-engine = create_engine('postgresql://%s:%s@%s/%s' % (db_user, db_password, db_url, db_name))
+
+if len(SQLALCHEMY_DATABASE_URI) < 35:
+    SQLALCHEMY_DATABASE_URI = 'postgresql://%s:%s@%s/%s' % (db_user, db_password, db_url, db_name)
+
+# engine = create_engine()
+engine = create_engine(SQLALCHEMY_DATABASE_URI)
 
 # Unit of Work pattern
 Session = sessionmaker(bind=engine)

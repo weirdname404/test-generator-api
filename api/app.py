@@ -3,7 +3,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from api.ontology_db.entities.db_config.base import Base, Session, engine
+from api.ontology_db.db_config.base import Base, Session, engine
 from api.ontology_db.entities.scales import Scale
 from api.ontology_db.entities.steel import Steel
 from api.ontology_db.entities.entity_class import EntityClass
@@ -37,7 +37,7 @@ sample = {"questions": [{
 @app.route("/update-ontology")
 def get_ontology():
     parse_ontology()
-    return "Ontology was successfully parsed.\nData was moved to DB."
+    return "Ontology was successfully parsed.\nData was moved to DB.\n"
 
 
 @app.route('/entities')

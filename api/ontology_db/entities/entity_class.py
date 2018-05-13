@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, String, Integer
 
-from .db_config.base import Base
+from api.ontology_db.db_config.base import Base
 
 
 class EntityClass(Base):

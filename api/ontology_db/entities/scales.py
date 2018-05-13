@@ -3,7 +3,7 @@
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
-from .db_config.base import Base
+from api.ontology_db.db_config.base import Base
 
 
 class Scale(Base):

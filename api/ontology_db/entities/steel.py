@@ -3,7 +3,7 @@
 from sqlalchemy import Column, String, Integer, ForeignKey, Table
 from sqlalchemy.orm import relationship, backref
 
-from .db_config.base import Base
+from api.ontology_db.db_config.base import Base
 
 # Object
 steels_alloying_elements_association = Table(
