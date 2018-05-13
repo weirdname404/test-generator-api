@@ -58,6 +58,10 @@ def get_entities():
     return jsonify(entities)
 
 
+@app.route('/')
+def hello():
+    return "Hello user! Welcome to test generation API."
+
 @app.route('/generate-test', methods=['POST'])
 def generate_test():
     user_request = {'request_info': request.get_json()}
