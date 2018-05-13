@@ -19,7 +19,7 @@ our dockerized PostgreSQL database
 
 try:
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
-    
+
 except KeyError:
     SQLALCHEMY_DATABASE_URI = ''
 
