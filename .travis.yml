@@ -1,0 +1,27 @@
+sudo: false
+language: python
+python:   
+  - "3.5"
+  - "3.5-dev"  # 3.5 development branch
+  - "3.6"
+  - "3.6-dev"  # 3.6 development branch
+
+services:
+  - postgresql
+
+install:
+  - pip install pipenv
+  - pipenv install --three
+
+before_script:
+  - psql -c "CREATE DATABASE ontology-db;" -U postgres
+  - psql -c "CREATE USER postgres WITH PASSWORD 'ONTOLOGY-DB';" -U postgres
+
+script:
+  - pipenv run python -c "from api.ontology_db.ontology_parser import parse_ontology; parse_ontology()"
+  - pipenv run python -m pytest -v
+  - pipenv run pytest --cov=./
+  - pipenv run ./run.sh
+
+after_success:
+  - pipenv runcodecov
