@@ -1,3 +1,4 @@
+[![BCH compliance](https://bettercodehub.com/edge/badge/weirdname404/test-generator-api?branch=master)](https://bettercodehub.com/)
 # test-generator-api
 Web service for unique test generation based on ontology of the domain
 
