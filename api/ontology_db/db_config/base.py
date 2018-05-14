@@ -17,7 +17,7 @@ our dockerized PostgreSQL database
 
 """
 
-SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+SQLALCHEMY_DATABASE_URI = ''
 
 # Local setup
 db_url = 'localhost:5432'
@@ -25,8 +25,14 @@ db_name = 'ontology-db'
 db_user = 'postgres'
 db_password = 'ONTOLOGY-DB'
 
-if len(SQLALCHEMY_DATABASE_URI) < 35:
-    SQLALCHEMY_DATABASE_URI = 'postgresql://%s:%s@%s/%s' % (db_user, db_password, db_url, db_name)
+local_db_url = 'postgresql://%s:%s@%s/%s' % (db_user, db_password, db_url, db_name)
+
+try:
+    env_db_url = os.environ['DATABASE_URL']
+    SQLALCHEMY_DATABASE_URI = env_db_url if '5432' in env_db_url else local_db_url
+
+except KeyError:
+    SQLALCHEMY_DATABASE_URI = local_db_url
 
 # engine = create_engine()
 engine = create_engine(SQLALCHEMY_DATABASE_URI)
