@@ -17,3 +17,6 @@ RUN pipenv install
 # Start app
 EXPOSE 5000
 ENTRYPOINT ["/usr/src/app/run.sh"]
+
+
+# DOCKER DOESN'T WORK
