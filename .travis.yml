@@ -24,4 +24,4 @@ script:
   - pipenv run ./run.sh
 
 after_success:
-  - pipenv runcodecov
+  - pipenv run codecov

@@ -12,6 +12,9 @@ pytest = "*"
 marshmallow = "*"
 flask-cors = "*"
 "psycopg2-binary" = "*"
+codecov = "*"
+pytest-cov = "*"
+coverage = "*"
 
 [requires]
 python_version = "3.5"
