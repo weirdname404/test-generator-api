@@ -11,9 +11,11 @@ class Scale(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    guid = relationship('ScaleGuid', uselist=False, back_populates='scale')
 
-    def __init__(self, name):
+    def __init__(self, name, guid):
         self.name = name
+        self.guid = guid
 
 
 class ScaleValue(Base):
