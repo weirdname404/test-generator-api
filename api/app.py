@@ -90,10 +90,10 @@ def generate_test():
         if amount < 0: raise ValueError
         request_question_type = test_requirements['question_type']
         request_answer_form = test_requirements['answer_form']
-        request_objects = test_requirements['objects']
-        request_attributes = test_requirements['attributes']
+        request_entities1 = test_requirements['entities1']
+        request_entities2 = test_requirements['entities2']
 
-        print(amount, request_question_type, request_answer_form, request_objects, request_attributes)
+        print(amount, request_question_type, request_answer_form, request_entities1, request_entities2)
 
     except KeyError as e:
         return '\nThe key %s does not exits!\n' % str(e), 400
@@ -101,8 +101,8 @@ def generate_test():
     except ValueError as e:
         return '\nThe amount of questions cannot be < 0\n', 400
 
-    api_response['questions'] = generate_tests(amount, request_question_type, request_answer_form, request_objects,
-                                               request_attributes)
+    api_response['questions'] = generate_tests(amount, request_question_type, request_answer_form, request_entities1,
+                                               request_entities2)
 
     return jsonify(api_response)
 
