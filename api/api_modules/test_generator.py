@@ -27,6 +27,8 @@ def generate_test(n, question_type, answer_form, entity_1, entity_2):
         entity_1 = random.choice(entity_1)
         entity_2 = random.choice(entity_2)
 
+        # TODO
+
     session.close()
 
     return tests
