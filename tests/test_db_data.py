@@ -3,8 +3,10 @@
 import unittest
 
 from api.ontology_db.db_config.base import Base, Session, engine
+from api.ontology_db.entities.entity_class import EntityClass
 from api.ontology_db.entities.scales import Scale
 from api.ontology_db.entities.steel import Steel
+from api.ontology_db.entities.guid import Guid, ScaleGuid, ClassGuid
 from api.ontology_db.ontology_parser import MAX_OBJS, MAX_SCALES
 
 # generate database schema
@@ -30,6 +32,7 @@ def test_scales_data():
     assert SCALE_1.values[0].value == 'Спокойная'
     assert SCALE_3.name == 'Содержание легирующих элементов'
     assert SCALE_3.values[0].value == 'Азот'
+    assert SCALE_1.guid != SCALE_3.guid
 
 
 def test_objects_data():
@@ -56,11 +59,20 @@ def test_data_ambiguity():
     obj_1 = session.query(Steel).filter(Steel.name == "Ст3Гпс").all()[0]
     obj_2 = session.query(Steel).filter(Steel.name == "Ст5Гпс").all()[0]
     assert obj_1.max_carbon_value.value == '0.22'
-
     # the values are the same,
     # but the value objects are different, due to different scales
     assert obj_1.max_carbon_value.value == obj_2.min_carbon_value.value
     assert obj_1.max_carbon_value != obj_2.max_carbon_value
+    # the same class and guid
+    assert obj_1.entity_class == obj_2.entity_class
+    assert obj_1.entity_class.guid == obj_2.entity_class.guid
 
 
-
+def test_data_consistency():
+    all_guids = session.query(Guid).all()
+    all_scale_guids = session.query(ScaleGuid).all()
+    all_class_guids = session.query(ClassGuid).all()
+    all_classes = session.query(EntityClass).all()
+    assert len(ALL_SCALES) == len(all_scale_guids)
+    assert len(all_class_guids) == len(all_classes)
+    assert len(ALL_OBJECTS) == len(all_guids)
