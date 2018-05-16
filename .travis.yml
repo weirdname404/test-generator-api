@@ -11,17 +11,21 @@ addons:
 env:
   - PIPENV_VENV_IN_PROJECT=1
   - PIPENV_IGNORE_VIRTUALENVS=1
+  - DATABASE_URL=postgresql://postgres:ONTOLOGY-DB@localhost:5433/ontology-db
 
 services:
-  - postgresql
+  - docker
+
+before_install:
+  - docker run --name ontology-orm-psql
+  -p 5433:5433
+  -e POSTGRES_DB=ontology-db
+  -e POSTGRES_PASSWORD=ONTOLOGY-DB
+  -d postgres
 
 install:
   - pip install pipenv
   - pipenv install --three
-
-before_script:
-  - psql -c "CREATE DATABASE 'ontology-db';" -U postgres
-  - psql -c "CREATE USER postgres WITH PASSWORD 'ONTOLOGY-DB';" -U postgres
 
 script:
   - pipenv run python -c "from api.ontology_db.ontology_parser import parse_ontology; parse_ontology()"
