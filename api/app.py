@@ -91,10 +91,9 @@ def hello():
 # a proper request in a JSON format is required
 @app.route('/generate-test', methods=['POST'])
 def generate_test():
-    api_response = {'request_info': request.get_json()}
-    test_requirements = api_response['request_info']['test_requirements']
-
     try:
+        api_response = {'request_info': request.get_json()}
+        test_requirements = api_response['request_info']['test_requirements']
         amount = test_requirements['count']
         if amount < 0: raise ValueError
         request_question_type = test_requirements['question_type']
