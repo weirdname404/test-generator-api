@@ -106,10 +106,14 @@ def generate_test():
             amount, request_question_type, request_answer_form, request_entities1, request_entities2))
 
     except KeyError as e:
-        return '\nThe key %s does not exits!\n' % str(e), 400
+        return '\nThe key %s does not exits!\n' % e, 400
 
     except ValueError as e:
         return '\nThe amount of questions cannot be < 0\n', 400
+
+    except TypeError as e:
+        return '\nThe request is invalid. %s\n' % e, 400
+
 
     api_response['questions'] = generate_tests(amount, request_question_type, request_answer_form, request_entities1,
                                                request_entities2)
