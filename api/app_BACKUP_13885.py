@@ -68,11 +68,13 @@ def hello():
     content = """
     Welcome to test generation API.
     ==============================
+
     Main commands:
     --------------
+
     /entities - GET method for fetching all classes, objects, and attributes.
     /generate-test - POST method used for test generation. 
-
+    
     Make sure to have the following structure.
     curl -XPOST -H "Content-type: application/json" -d '{"key1": "Value1"}' 'https://test-generator-api.herokuapp.com/generate-test'
     """
@@ -111,4 +113,4 @@ def generate_test():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)

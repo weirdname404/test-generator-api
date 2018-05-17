@@ -5,7 +5,7 @@ from api.ontology_db.db_config.base import Base, Session, engine
 from api.ontology_db.entities.deoxidizing import DeoxidizingType
 from api.ontology_db.entities.entity_class import EntityClass
 from api.ontology_db.entities.gost import Gost
-from api.ontology_db.entities.guid import Guid
+from api.ontology_db.entities.guid import Guid, ScaleGuid, ClassGuid
 from api.ontology_db.entities.max_carbon_value import MaxCarbonValue
 from api.ontology_db.entities.min_carbon_value import MinCarbonValue
 from api.ontology_db.entities.quality import QualityType
@@ -38,7 +38,8 @@ def parse_insert_scales(file_name):
 
         if ws.cell(row, col).value == 'Title':
             scale_name = ws.cell(row, col + 1).value
-            scale_object = Scale(scale_name)
+            scale_guid = ws.cell(row + 6, col + 1).value
+            scale_object = Scale(scale_name, ScaleGuid(scale_guid))
             continue
 
         elif ws.cell(row, col).value == 'Values':
@@ -56,21 +57,20 @@ def parse_insert_scales(file_name):
     session.commit()
     session.close()
 
-    print('\nScales are successfully parsed and moved to db\n')
+    print('\nScales are successfully parsed and moved to db')
 
 
 def print_scales():
     ontology_scales = {}
 
-    all_scales = session.query(Scale) \
-        .all()
+    all_scales = session.query(Scale).all()
 
     print('\n### All scales:\n')
 
     for scale in all_scales:
         print(scale.name)
-        print([value.value for value in scale.values])
-        print('\n')
+        print(scale.guid.name)
+        print([value.value for value in scale.values], '\n')
 
 
 # Parsing and inserting data about Steel Objects from the ontology file ('MVContext')
@@ -135,7 +135,14 @@ def parse_insert_objects(file_name):
             # in other cases, let's create a value obj and use it in the future
             else:
                 if i == 0:
-                    value_obj = EntityClass(current_value)
+                    thesaurus = load_workbook(file_name)['Thesaurus']
+                    row, col = 2, 2
+
+                    while thesaurus.cell(row, col).value != current_value:
+                        row += 1
+
+                    class_guid = thesaurus.cell(row, col - 1).value
+                    value_obj = EntityClass(current_value, ClassGuid(class_guid))
 
                 elif i == 1:
                     value_obj = Gost(current_value)
@@ -155,23 +162,27 @@ def parse_insert_objects(file_name):
                 value_objects[i][current_value] = value_obj
                 row_data_objs.append(value_obj)
 
-        # object creation
-        steel_object = Steel(steel_name, steel_guid)
-        steel_object.entity_class = row_data_objs[0]
-        steel_object.gost = row_data_objs[1]
-        steel_object.deoxidizing_type = row_data_objs[2]
-        steel_object.quality = row_data_objs[3]
-        steel_object.alloying_elements = row_data_objs[4]
-        steel_object.min_carbon_value = row_data_objs[5]
-        steel_object.max_carbon_value = row_data_objs[6]
-
-        session.add(steel_object)
+        session.add(create_object(steel_name, steel_guid, row_data_objs[0], row_data_objs[1], row_data_objs[2],
+                                  row_data_objs[3], row_data_objs[4], row_data_objs[5], row_data_objs[6]))
 
     # Save insert actions
     session.commit()
     session.close()
 
     print('Objects are successfully parsed and moved to db\n')
+
+
+def create_object(name, guid, entity_class, gost, deox_type, quality, alloy_elements, min_carbon, max_carbon):
+    steel_object = Steel(name, guid)
+    steel_object.entity_class = entity_class
+    steel_object.gost = gost
+    steel_object.deoxidizing_type = deox_type
+    steel_object.quality = quality
+    steel_object.alloying_elements = alloy_elements
+    steel_object.min_carbon_value = min_carbon
+    steel_object.max_carbon_value = max_carbon
+
+    return steel_object
 
 
 def parse_alloying_elements(obj_dict, current_value, elements_key):
@@ -199,13 +210,12 @@ def print_objects():
         print(steel.name)
         print(steel.guid.name)
         print(steel.gost.name)
-        print(steel.entity_class.name)
+        print(steel.entity_class.name, '(%s)' % (steel.entity_class.guid.name))
         print(steel.deoxidizing_type.name)
         print(steel.quality.name)
         print([element.name for element in steel.alloying_elements])
         print(steel.min_carbon_value.value)
-        print(steel.max_carbon_value.value)
-        print('\n')
+        print(steel.max_carbon_value.value, '\n')
 
 
 def clear_db_data(session):
@@ -228,6 +238,8 @@ def drop_tables(session):
     engine.execute("DROP TABLE entity_classes CASCADE")
     engine.execute("DROP TABLE deoxidizing_types CASCADE")
     engine.execute("DROP TABLE alloying_elements CASCADE")
+    engine.execute("DROP TABLE scale_guids CASCADE")
+    engine.execute("DROP TABLE class_guids CASCADE")
     print('\nALL TABLES DROPPED\n')
 
 
