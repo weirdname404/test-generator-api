@@ -4,14 +4,11 @@ python:
   - "3.5"
   - "3.6"
 
-addons:
-  apt:
-    update: true
-
 env:
-  - PIPENV_VENV_IN_PROJECT=1
-  - PIPENV_IGNORE_VIRTUALENVS=1
-  - DATABASE_URL=postgresql://postgres:ONTOLOGY-DB@localhost:5433/ontology-db
+  global:
+    - PIPENV_VENV_IN_PROJECT=1
+    - PIPENV_IGNORE_VIRTUALENVS=1
+    - DATABASE_URL=postgresql://postgres:ONTOLOGY-DB@localhost:5433/ontology-db
 
 services:
   - docker
