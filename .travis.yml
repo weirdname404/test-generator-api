@@ -15,10 +15,10 @@ services:
 
 before_install:
   - docker run --name ontology-orm-psql
-  -p 5433:5433
-  -e POSTGRES_DB=ontology-db
-  -e POSTGRES_PASSWORD=ONTOLOGY-DB
-  -d postgres
+      -p 5433:5433
+      -e POSTGRES_DB=ontology-db
+      -e POSTGRES_PASSWORD=ONTOLOGY-DB
+      -d postgres
 
 install:
   - pip install pipenv
