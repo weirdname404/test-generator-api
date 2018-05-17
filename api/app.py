@@ -9,7 +9,7 @@ from api.ontology_db.db_config.base import Base, Session, engine
 from api.ontology_db.entities.entity_class import EntityClass
 from api.ontology_db.entities.scales import Scale
 from api.ontology_db.entities.steel import Steel
-from api.ontology_db.ontology_parser import parse_ontology
+from api.ontology_db.ontology_parser import parse_ontology, drop_tables
 from api.api_modules.test_generator import generate_test as generate_tests
 
 # creating the Flask application
@@ -41,6 +41,13 @@ sample = {"questions": [{
 def get_ontology():
     parse_ontology()
     return "Ontology was successfully parsed.\nData was moved to DB.\n"
+
+
+@app.route("/drop-ontology")
+def drop_ontology():
+    session = Session()
+    drop_tables(session)
+    return "DB was dropped.\n"
 
 
 # GET method for fetching all entities (classes, objects, scales)
@@ -98,7 +105,7 @@ def generate_test():
         request_entities2 = test_requirements['entities2']
 
         app.logger.info("\nArguments: %s %s %s %s %s" % (
-        amount, request_question_type, request_answer_form, request_entities1, request_entities2))
+            amount, request_question_type, request_answer_form, request_entities1, request_entities2))
 
     except KeyError as e:
         return '\nThe key %s does not exits!\n' % str(e), 400
