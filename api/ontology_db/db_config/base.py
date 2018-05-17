@@ -29,7 +29,7 @@ local_db_url = 'postgresql://%s:%s@%s/%s' % (db_user, db_password, db_url, db_na
 
 try:
     env_db_url = os.environ['DATABASE_URL']
-    SQLALCHEMY_DATABASE_URI = env_db_url if 'localhost' in env_db_url else local_db_url
+    SQLALCHEMY_DATABASE_URI = env_db_url
 
 except KeyError:
     SQLALCHEMY_DATABASE_URI = local_db_url
