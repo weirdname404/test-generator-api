@@ -43,6 +43,7 @@ def get_ontology():
     return "Ontology was successfully parsed.\nData was moved to DB.\n"
 
 
+# GET method for fetching all entities (classes, objects, scales)
 @app.route('/entities')
 def get_entities():
     # fetching from the database
@@ -61,6 +62,7 @@ def get_entities():
     return jsonify(entities)
 
 
+# Welcome message on test-generator-api.herokuapp.com
 @app.route('/')
 def hello():
     content = """
@@ -80,6 +82,8 @@ def hello():
     return Markup(markdown.markdown(content))
 
 
+# POST method for test generation
+# a proper request in a JSON format is required
 @app.route('/generate-test', methods=['POST'])
 def generate_test():
     api_response = {'request_info': request.get_json()}
@@ -93,7 +97,8 @@ def generate_test():
         request_entities1 = test_requirements['entities1']
         request_entities2 = test_requirements['entities2']
 
-        print(amount, request_question_type, request_answer_form, request_entities1, request_entities2)
+        app.logger.info("\nArguments: %s %s %s %s %s" % (
+        amount, request_question_type, request_answer_form, request_entities1, request_entities2))
 
     except KeyError as e:
         return '\nThe key %s does not exits!\n' % str(e), 400
