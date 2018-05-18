@@ -122,9 +122,8 @@ def generate_test():
 
 # the user could make a mistake so we should check before generation
 def check_entities(request_entities1, request_entities2):
-    all_entities = steels + scales + classes
+    all_entities = set(steels + scales + classes)
     request_entities = request_entities1 + request_entities2
-    print(all_entities, request_entities)
     for entity in request_entities:
         if entity not in all_entities:
             return entity
