@@ -6,8 +6,7 @@ from api.ontology_db.entities.deoxidizing import DeoxidizingType
 from api.ontology_db.entities.entity_class import EntityClass
 from api.ontology_db.entities.gost import Gost
 from api.ontology_db.entities.guid import Guid, ScaleGuid, ClassGuid
-from api.ontology_db.entities.max_carbon_value import MaxCarbonValue
-from api.ontology_db.entities.min_carbon_value import MinCarbonValue
+from api.ontology_db.entities.element_value import MinCarbonValue, MaxCarbonValue
 from api.ontology_db.entities.quality import QualityType
 from api.ontology_db.entities.scales import Scale, ScaleValue
 from api.ontology_db.entities.steel import Steel
@@ -156,33 +155,29 @@ def parse_insert_objects(file_name):
                 elif i == 5:
                     value_obj = MinCarbonValue(current_value)
 
-                elif i == 6:
+                else:
                     value_obj = MaxCarbonValue(current_value)
 
                 value_objects[i][current_value] = value_obj
                 row_data_objs.append(value_obj)
 
-        session.add(create_object(steel_name, steel_guid, row_data_objs[0], row_data_objs[1], row_data_objs[2],
-                                  row_data_objs[3], row_data_objs[4], row_data_objs[5], row_data_objs[6]))
+        # Object init and data updating
+        steel_object = Steel(steel_name, steel_guid)
+        steel_object.entity_class = row_data_objs[0]
+        steel_object.gost = row_data_objs[1]
+        steel_object.deoxidizing_type = row_data_objs[2]
+        steel_object.quality = row_data_objs[3]
+        steel_object.alloying_elements = row_data_objs[4]
+        steel_object.min_carbon_value = row_data_objs[5]
+        steel_object.max_carbon_value = row_data_objs[6]
+        # saving in DB
+        session.add(steel_object)
 
     # Save insert actions
     session.commit()
     session.close()
 
     print('Objects are successfully parsed and moved to db\n')
-
-
-def create_object(name, guid, entity_class, gost, deox_type, quality, alloy_elements, min_carbon, max_carbon):
-    steel_object = Steel(name, guid)
-    steel_object.entity_class = entity_class
-    steel_object.gost = gost
-    steel_object.deoxidizing_type = deox_type
-    steel_object.quality = quality
-    steel_object.alloying_elements = alloy_elements
-    steel_object.min_carbon_value = min_carbon
-    steel_object.max_carbon_value = max_carbon
-
-    return steel_object
 
 
 def parse_alloying_elements(obj_dict, current_value, elements_key):
