@@ -160,7 +160,7 @@ def generate_oa_stem(config):
 
             else:
                 stem += "Определите массовую долю %s в процентах у стали %s:" % (
-                attribute.name.split()[2], steel_object.name)
+                    attribute.name.split()[2], steel_object.name)
     # 'A>O'
     else:
         if binary:
