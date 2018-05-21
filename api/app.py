@@ -9,7 +9,8 @@ from api.ontology_db.entities.entity_class import EntityClass
 from api.ontology_db.entities.scales import Scale
 from api.ontology_db.entities.steel import Steel
 from api.ontology_db.ontology_parser import parse_ontology, drop_tables
-from api.api_modules.test_generator import generate_test as generate_tests
+from api.api_modules.generator import generate_test as generate_tests
+from api.api_modules.requirements_class import TestRequirements
 
 # creating the Flask application
 app = Flask(__name__, template_folder="views")
@@ -88,22 +89,24 @@ def hello():
 def generate_test():
     try:
         api_response = {'request_info': request.get_json()}
-        test_requirements = api_response['request_info']['test_requirements']
-        amount = test_requirements['count']
+        test_requirements_json = api_response['request_info']['test_requirements']
+        amount = test_requirements_json['count']
         if amount < 0:
             raise ValueError
 
-        request_question_type = test_requirements['question_type']
-        request_answer_form = test_requirements['answer_form']
-        request_entities1 = test_requirements['entities1']
-        request_entities2 = test_requirements['entities2']
-        error_value = ''
-        error_value = check_entities(request_entities1, request_entities2)
+        request_question_types = test_requirements_json['question_type']
+        test_requirements = TestRequirements(amount, request_question_types)
+        test_requirements.request_answer_forms = test_requirements_json['answer_form']
+
+        error_value = check_entities(test_requirements_json['entities1'], test_requirements_json['entities2'])
         if error_value:
             raise TypeError
 
-        app.logger.info("\nArguments: %s %s %s %s %s" % (
-            amount, request_question_type, request_answer_form, request_entities1, request_entities2))
+        else:
+            test_requirements.request_entities1 = test_requirements_json['entities1']
+            test_requirements.request_entities2 = test_requirements_json['entities2']
+
+        # TODO Add Logging
 
     except KeyError as e:
         return '\nThe key %s does not exits!\n' % e, 400
@@ -114,8 +117,7 @@ def generate_test():
     except TypeError:
         return '\nThe request is invalid. %s does not exist in the ontology\n' % (error_value), 400
 
-    api_response['questions'] = generate_tests(amount, request_question_type, request_answer_form, request_entities1,
-                                               request_entities2)
+    api_response['questions'] = generate_tests(test_requirements)
 
     return jsonify(api_response)
 
