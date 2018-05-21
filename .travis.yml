@@ -23,7 +23,7 @@ install:
 script:
   - pipenv run python -c "from api.ontology_db.ontology_parser import parse_ontology; parse_ontology()"
   - pipenv run python -m pytest -v
-  - pipenv run pytest --cov=./
+  - pipenv run python -m pytest --cov=./
 
 after_success:
   - pipenv run codecov
