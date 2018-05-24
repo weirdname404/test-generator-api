@@ -7,7 +7,7 @@ from api.ontology_db.entities.entity_class import EntityClass
 from api.ontology_db.entities.scales import Scale
 from api.ontology_db.entities.steel import Steel
 from api.ontology_db.entities.guid import Guid, ScaleGuid, ClassGuid
-from api.ontology_db.ontology_parser import MAX_OBJS, MAX_SCALES
+from api.ontology_db.ontology_parser import MAX_OBJS, SUPPORTED_SCALES
 
 # generate database schema
 Base.metadata.create_all(engine)
@@ -27,7 +27,7 @@ OBJECT_2 = ALL_OBJECTS[1]
 
 
 def test_scales_data():
-    assert len(ALL_SCALES) == MAX_SCALES
+    assert len(ALL_SCALES) == SUPPORTED_SCALES
     assert SCALE_1.name == 'Способ раскисления'
     assert SCALE_1.values[0].value == 'Спокойная'
     assert SCALE_3.name == 'Содержание легирующих элементов'
