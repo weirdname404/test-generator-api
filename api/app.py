@@ -8,7 +8,7 @@ from api.ontology_db.db_config.base import Base, Session, engine
 from api.ontology_db.entities.entity_class import EntityClass
 from api.ontology_db.entities.scales import Scale
 from api.ontology_db.entities.steel import Steel
-from api.ontology_db.ontology_parser import parse_ontology, drop_tables
+from api.ontology_db.ontology_parser import parse_ontology, drop_ontology as drop_onto
 from api.api_modules.generator import generate_test as generate_tests
 from api.api_modules.requirements_class import TestRequirements
 
@@ -27,22 +27,6 @@ scales = [scale.name for scale in session.query(Scale).all()]
 classes = [entity_class.name for entity_class in session.query(EntityClass).distinct().all()]
 session.close()
 
-sample = {"questions": [{
-    "guid": "Q1_GUID",
-    "question_type": "O>A",
-    "answer_form": "choice",
-    "entity1": "E1_GUID",
-    "entity2": "E2_GUID",
-    "stem": "Определите верный способ раскисления у марки стали 05кп:",
-    "distractors": [
-        "Полуспокойная",
-        "Кипящая",
-        "Спокойная"
-    ],
-
-    "key": [1]
-}]}
-
 
 @app.route("/update-ontology")
 def get_ontology():
@@ -52,8 +36,8 @@ def get_ontology():
 
 @app.route("/drop-ontology")
 def drop_ontology():
-    drop_tables(session)
-    return "DB was dropped.\n"
+    drop_onto()
+    return "Ontology DB was dropped.\n"
 
 
 # GET method for fetching all entities (classes, objects, scales)
@@ -65,8 +49,7 @@ def get_entities():
 # Welcome message on test-generator-api.herokuapp.com
 @app.route('/')
 def hello():
-    content = """
-    <h3>Welcome to test generation API</h3>
+    return """<h3>Welcome to test generation API</h3>
     <p><b>Main commands:</b><br><br>
     /entities - <i>GET method for fetching all classes, objects, and attributes.</i><br>
     /generate-test - <i>POST method which is used to send a request for test generation.</i></p>
@@ -78,9 +61,7 @@ def hello():
      <code>"version": "1.00","guid": "2E7E22F4-5B51-4948-B120-AB21F08317DB",</code><br>
      <code>"test_requirements": {"count": 5,"question_type": ["O>A"],</code><br>
      <code>"answer_form": ["binary"],"entities1": ["Ст4сп", "05кп"],"entities2": 
-     ["Максимальная доля углерода в процентах", "ГОСТ сплава"]}}</code><br>
-    """
-    return content
+     ["Максимальная доля углерода в процентах", "ГОСТ сплава"]}}</code><br>"""
 
 
 # POST method for test generation
@@ -90,13 +71,11 @@ def generate_test():
     try:
         api_response = {'request_info': request.get_json()}
         test_requirements_json = api_response['request_info']['test_requirements']
-        amount = test_requirements_json['count']
-        if amount < 0:
+        if test_requirements_json['count'] < 0:
             raise ValueError
 
-        request_question_types = test_requirements_json['question_type']
-        test_requirements = TestRequirements(amount, request_question_types)
-        test_requirements.request_answer_forms = test_requirements_json['answer_form']
+        test_requirements = TestRequirements(test_requirements_json['count'], test_requirements_json['question_type'],
+                                             test_requirements_json['answer_form'])
 
         error_value = check_entities(test_requirements_json['entities1'], test_requirements_json['entities2'])
         if error_value:
@@ -109,13 +88,13 @@ def generate_test():
         # TODO Add Logging
 
     except KeyError as e:
-        return '\nThe key %s does not exits!\n' % e, 400
+        return f'\nThe key {e} does not exits!\n', 400
 
     except ValueError as e:
         return '\nThe amount of questions cannot be < 0\n', 400
 
     except TypeError:
-        return '\nThe request is invalid. %s does not exist in the ontology\n' % (error_value), 400
+        return f'\nThe request is invalid. {error_value} does not exist in the ontology\n', 400
 
     api_response['questions'] = generate_tests(test_requirements)
 
