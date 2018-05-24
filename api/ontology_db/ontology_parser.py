@@ -6,7 +6,7 @@ from api.ontology_db.entities.deoxidizing import DeoxidizingType
 from api.ontology_db.entities.entity_class import EntityClass
 from api.ontology_db.entities.gost import Gost
 from api.ontology_db.entities.guid import Guid, ScaleGuid, ClassGuid
-from api.ontology_db.entities.element_value import MinCarbonValue, MaxCarbonValue
+from api.ontology_db.entities.element_value import MinCarbonValue, MaxCarbonValue, MaxMarganeseValue, MinMarganeseValue
 from api.ontology_db.entities.quality import QualityType
 from api.ontology_db.entities.scales import Scale, ScaleValue
 from api.ontology_db.entities.steel import Steel
@@ -23,7 +23,9 @@ FILE_NAME = './ontology.xlsm'
 ROW_MAX = 65
 
 MAX_OBJS = 45
-MAX_SCALES = 8
+SUPPORTED_SCALES = 8
+# obj_name and obj_class included
+MAX_SCALES = SUPPORTED_SCALES + 2
 
 
 # Parsing and inserting data about Scales from the ontology file ('Scales')
@@ -80,7 +82,7 @@ def parse_insert_objects(file_name):
     # The main idea is to reuse already created objects, which will be contained in the dict 
     value_objects = {}
 
-    for row in ws.iter_rows(min_row=2, max_col=9, max_row=MAX_OBJS):
+    for row in ws.iter_rows(min_row=2, max_col=MAX_SCALES + 1, max_row=MAX_OBJS):
         """
         The data is in the following order:
 
@@ -133,51 +135,70 @@ def parse_insert_objects(file_name):
 
             # in other cases, let's create a value obj and use it in the future
             else:
-                if i == 0:
-                    thesaurus = load_workbook(file_name)['Thesaurus']
-                    row, col = 2, 2
-
-                    while thesaurus.cell(row, col).value != current_value:
-                        row += 1
-
-                    class_guid = thesaurus.cell(row, col - 1).value
-                    value_obj = EntityClass(current_value, ClassGuid(class_guid))
-
-                elif i == 1:
-                    value_obj = Gost(current_value)
-
-                elif i == 2:
-                    value_obj = DeoxidizingType(current_value)
-
-                elif i == 3:
-                    value_obj = QualityType(current_value)
-
-                elif i == 5:
-                    value_obj = MinCarbonValue(current_value)
-
-                else:
-                    value_obj = MaxCarbonValue(current_value)
-
+                value_obj = define_object(i, file_name, current_value)
                 value_objects[i][current_value] = value_obj
                 row_data_objs.append(value_obj)
 
-        # Object init and data updating
-        steel_object = Steel(steel_name, steel_guid)
-        steel_object.entity_class = row_data_objs[0]
-        steel_object.gost = row_data_objs[1]
-        steel_object.deoxidizing_type = row_data_objs[2]
-        steel_object.quality = row_data_objs[3]
-        steel_object.alloying_elements = row_data_objs[4]
-        steel_object.min_carbon_value = row_data_objs[5]
-        steel_object.max_carbon_value = row_data_objs[6]
-        # saving in DB
-        session.add(steel_object)
+        # saving steel object in DB
+        session.add(init_steel_object(steel_name, steel_guid, row_data_objs))
 
     # Save insert actions
     session.commit()
     session.close()
 
     print('Objects are successfully parsed and moved to db\n')
+
+
+# steel attributes init
+def define_object(i, file_name, current_value):
+    if i == 0:
+        thesaurus = load_workbook(file_name)['Thesaurus']
+        row, col = 2, 2
+
+        while thesaurus.cell(row, col).value != current_value:
+            row += 1
+
+        class_guid = thesaurus.cell(row, col - 1).value
+        value_obj = EntityClass(current_value, ClassGuid(class_guid))
+
+    elif i == 1:
+        value_obj = Gost(current_value)
+
+    elif i == 2:
+        value_obj = DeoxidizingType(current_value)
+
+    elif i == 3:
+        value_obj = QualityType(current_value)
+
+    elif i == 5:
+        value_obj = MinCarbonValue(current_value)
+
+    elif i == 6:
+        value_obj = MaxCarbonValue(current_value)
+
+    elif i == 7:
+        value_obj = MinMarganeseValue(current_value)
+
+    else:
+        value_obj = MaxMarganeseValue(current_value)
+
+    return value_obj
+
+
+# Object init and data updating
+def init_steel_object(steel_name, steel_guid, row_data_objs):
+    steel_object = Steel(steel_name, steel_guid)
+    steel_object.entity_class = row_data_objs[0]
+    steel_object.gost = row_data_objs[1]
+    steel_object.deoxidizing_type = row_data_objs[2]
+    steel_object.quality = row_data_objs[3]
+    steel_object.alloying_elements = row_data_objs[4]
+    steel_object.min_carbon_value = row_data_objs[5]
+    steel_object.max_carbon_value = row_data_objs[6]
+    steel_object.min_marganese_value = row_data_objs[7]
+    steel_object.max_marganese_value = row_data_objs[8]
+
+    return steel_object
 
 
 def parse_alloying_elements(obj_dict, current_value, elements_key):
@@ -242,3 +263,7 @@ def parse_ontology():
     clear_db_data(session)
     parse_insert_scales(FILE_NAME)
     parse_insert_objects(FILE_NAME)
+
+
+def drop_ontology():
+    drop_tables(session)

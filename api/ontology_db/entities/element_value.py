@@ -25,3 +25,25 @@ class MaxCarbonValue(Base):
 
     def __init__(self, value):
         self.value = value
+
+
+# Attribute
+class MaxMarganeseValue(Base):
+    __tablename__ = 'max_marganese_values'
+
+    id = Column(Integer, primary_key=True)
+    value = Column(String(20))
+
+    def __init__(self, value):
+        self.value = value
+
+
+# Attribute
+class MinMarganeseValue(Base):
+    __tablename__ = 'min_marganese_values'
+
+    id = Column(Integer, primary_key=True)
+    value = Column(String(20))
+
+    def __init__(self, value):
+        self.value = value

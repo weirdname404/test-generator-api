@@ -25,6 +25,8 @@ class Steel(Base):
     quality_id = Column(Integer, ForeignKey('quality_types.id'))
     min_carbon_value_id = Column(Integer, ForeignKey('min_carbon_values.id'))
     max_carbon_value_id = Column(Integer, ForeignKey('max_carbon_values.id'))
+    min_marganese_value_id = Column(Integer, ForeignKey('min_marganese_values.id'))
+    max_marganese_value_id = Column(Integer, ForeignKey('max_marganese_values.id'))
 
     guid = relationship('Guid', uselist=False, backref='steel')
     gost = relationship('Gost', backref='steels')
@@ -34,6 +36,8 @@ class Steel(Base):
                                      backref='steels')
     min_carbon_value = relationship('MinCarbonValue', backref='steels')
     max_carbon_value = relationship('MaxCarbonValue', backref='steels')
+    min_marganese_value = relationship('MinMarganeseValue', backref='steels')
+    max_marganese_value = relationship('MaxMarganeseValue', backref='steels')
     entity_class = relationship('EntityClass', backref='steels')
 
     def __init__(self, name, guid):
