@@ -29,7 +29,6 @@ try:
 except KeyError:
     SQLALCHEMY_DATABASE_URI = local_db_url
 
-# engine = create_engine()
 engine = create_engine(SQLALCHEMY_DATABASE_URI, pool_pre_ping=True)
 
 # Unit of Work pattern

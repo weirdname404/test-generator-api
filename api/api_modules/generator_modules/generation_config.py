@@ -21,8 +21,6 @@ class Config:
     final_key = []
     final_distractors = []
 
-    def __init__(self, q_type, a_form, ent1, ent2):
+    def __init__(self, q_type, a_form):
         self.q_type = q_type
         self.a_form = a_form
-        self.obj = ent1
-        self.attr = ent2

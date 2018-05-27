@@ -14,7 +14,6 @@ session = Session()
 
 # constants
 ALL_STEELS = session.query(Steel).all()
-ALL_SCALES = session.query(Scale).all()
 
 SA_OBJ = 'steel_attr_obj'
 SA_CLASS = 'steel_attr_class'
@@ -33,8 +32,8 @@ def generate_test(test_requirements):
 
     for _ in range(test_requirements.amount):
         question_type, answer_form, entity_1, entity_2 = make_random_choice(test_requirements)
-        steel_object, attribute = define_object_attribute(entity_1, entity_2)
-        config = Config(question_type, answer_form, steel_object, attribute)
+        config = Config(question_type, answer_form)
+        config.obj, config.attr = define_object_attribute(entity_1, entity_2)
 
         # if the answer form is binary, we need to randomly choose will the answer to the Q. be positive or negative
         config.positive = bool(random.getrandbits(1))
@@ -74,34 +73,6 @@ def generate_json(config):
     return test
 
 
-# TODO
-# randomly choose either Scale or Steel object to be compared with initial entity
-def choose_entity3(test, entities_list, entity):
-    # copy a list, remove the chosen entity, randomly choose new entity
-    entities = entities_list[:]
-    entities.remove(entity)
-    # randomly choose Steel or Scale object
-    random_chosen_entity = random.choice(entities)
-    test['entity3'] = random_chosen_entity.guid.name
-
-    # if config.a_form == 'binary':
-    #     # O>O
-    #     # the answer will be positive if the initially chosen Steel object has the same value on the basis
-    #     # of chosen Scale with the another randomly chosen Steel object, in other case the answer will be negative
-    #     if config.q_type == 'O>O':
-    #         config.positive = True if config.key_scale_value == generate_key(random_chosen_entity, config.attr.name) \
-    #             else False
-    #     # A>A
-    #     # the answer will be positive if the initially chosen Object with certain Scale value has also another
-    #     # Scale value which was randomly chosen from all Scale values, else - the answer will be negative
-    #     elif config.q_type == 'A>A':
-    #         random_chosen_scale_value = random.choice(generate_min_max_distractors()random_chosen_entity.values)
-    #         config.positive = True if generate_key(config.obj, random_chosen_entity) == random_chosen_scale_value \
-    #             else False
-
-    return random_chosen_entity, test
-
-
 # attribute value, attribute class, steel.attribute object definition
 def define(request_code, steel_object, attribute_name):
     if 'в процентах' in attribute_name:
@@ -126,9 +97,9 @@ def define(request_code, steel_object, attribute_name):
                      [steel_object.min_marganese_value.value + '-' + steel_object.max_marganese_value.value]]
     }
 
-    # defining attribute class
-    # defining steel.attribute object
-    # defining [correct attribute value(s)] for a steel object
+    # 1 - defining attribute class
+    # 2 - defining steel.attribute object
+    # 3 - defining [correct attribute value(s)] for a steel object
     response = {
         SA_OBJ: attribute_dict[attribute_name][0],
         SA_CLASS: attribute_dict[attribute_name][1],
@@ -153,7 +124,7 @@ def generate_min_max_distractors(distractors, attribute):
         return distractors
 
 
-# generating a stem, distractors and keys
+# stem, distractors and keys generation manager
 def generate_test_item(config):
     config.key_scale_value = define(KEY, config.obj, config.attr.name)
 
@@ -169,29 +140,20 @@ def generate_test_item(config):
     elif config.q_type == 'A>O':
         generate_ao_distractors_and_answers(config)
 
-    elif config.q_type == 'O>A>O':
-        # getting all Steels objects except initial Steel object; shuffling
-        # generate entity3 and distractors
-        # all_steels = session.query(Steel).filter(Steel.name != steel_object.name).all()
-        # random.shuffle(all_steels)
-        pass
-
-    elif config.q_type == 'A>O>A':
-        pass
-
     return generate_stem(config), config.final_distractors, config.final_key
 
 
-# All answer forms for O>A
+# Distractors and keys generation for all answer forms (binary, choice, options), for O>A question type
 def generate_oa_distractors_and_answers(config):
     steel_object, attribute, key_scale_value = config.obj, config.attr, config.key_scale_value
-    distractors = generate_scale_values_distractors(config)
+    distractors = get_scale_values(config)
 
     if config.a_form == 'binary':
         config.final_key = ['Нет']
         # key is a list, we can handle single and multiple answers
         config.answer_option = random.choice(generate_min_max_distractors(distractors, attribute)).lower()
 
+    # Choice or options
     else:
         random.shuffle(distractors)
         distractors = distractors[:4]
@@ -202,7 +164,8 @@ def generate_oa_distractors_and_answers(config):
         config.final_distractors = config.final_key + config.scale_value_distractors
 
 
-# For binary question with positive question we need everything we need, so the generation is pointless
+# Binary question with positive answer requires only object name and object attribute value, so we can shorten the
+# whole generation process
 def shorten_generation_process(config):
     if config.a_form == 'binary':
         if config.positive:
@@ -212,7 +175,8 @@ def shorten_generation_process(config):
     return False
 
 
-def generate_scale_values_distractors(config):
+# Get all scale values from the chosen Scale to use them in distractors
+def get_scale_values(config):
     """
     [i.value for i in attribute.values]
     This approach is an appropriate way to work with
@@ -231,45 +195,57 @@ def generate_scale_values_distractors(config):
         {i.value for i in config.attr.values} - set(config.key_scale_value))
 
 
-# All answer forms for A>O
+# Distractors and keys generation for all answer forms (binary, choice, options), for A>O question type
 def generate_ao_distractors_and_answers(config):
-    steel_object, attribute, key_scale_value = config.obj, config.attr, config.key_scale_value
-    distractors = generate_scale_values_distractors(config)
+    distractors = get_scale_values(config)
 
     if config.a_form == 'binary':
         config.final_key = ['Нет']
         # key is a list, we can handle single and multiple answers
-        config.answer_option = random.choice(generate_min_max_distractors(distractors, attribute)).lower()
+        config.answer_option = random.choice(generate_min_max_distractors(distractors, config.attr)).lower()
 
     else:
-        steel_attribute_obj = define(SA_OBJ, config.obj, config.attr.name)
-        db_steel_attribute_obj = define(SA_CLASS, config.obj, config.attr.name)
         config.answer_option = ', '.join(i for i in config.key_scale_value)
-        if 'легир' in config.attr.name:
-            object_distractors = [i for i in ALL_STEELS if i.alloying_elements != steel_attribute_obj]
-            object_possible_keys = [i for i in ALL_STEELS if
-                                    i.alloying_elements == steel_attribute_obj and i.name != config.obj.name]
+        generate_ao_co_distractors_and_keys(config)
 
-        else:
-            # fetch distracting objects
-            object_distractors = session.query(Steel) \
-                .filter(db_steel_attribute_obj != steel_attribute_obj) \
-                .all()
 
-            # fetch valid objects
-            object_possible_keys = session.query(Steel) \
-                .filter(db_steel_attribute_obj == steel_attribute_obj, Steel.name != config.obj.name) \
-                .all()
+# Get STEEL OBJECTS which can distract or be the right answer
+def get_ao_possible_answers(config):
+    steel_attribute_obj = define(SA_OBJ, config.obj, config.attr.name)
+    db_steel_attribute_obj = define(SA_CLASS, config.obj, config.attr.name)
 
-        if config.a_form == "choice":
-            config.final_key = [config.obj.name]
-            random.shuffle(object_distractors)
-            config.final_distractors = config.final_key + [steel.name for steel in object_distractors[:4]]
+    # this approach was implemented because there is a conflict with SQLAlchemy collection and obj collection comparison
+    if 'легир' in config.attr.name:
+        object_distractors = [i for i in ALL_STEELS if i.alloying_elements != steel_attribute_obj]
+        object_possible_keys = [i for i in ALL_STEELS if
+                                i.alloying_elements == steel_attribute_obj and i.name != config.obj.name]
 
-        else:
-            distractor_num = random.randint(0, 4)
-            random.shuffle(object_distractors)
-            random.shuffle(object_possible_keys)
-            distractors = [steel.name for steel in object_distractors[:distractor_num]]
-            config.final_key = [steel_object.name] + [steel.name for steel in object_possible_keys[:4 - distractor_num]]
-            config.final_distractors = config.final_key + distractors
+    else:
+        # fetch distracting objects
+        object_distractors = session.query(Steel) \
+            .filter(db_steel_attribute_obj != steel_attribute_obj) \
+            .all()
+
+        # fetch valid objects
+        object_possible_keys = session.query(Steel) \
+            .filter(db_steel_attribute_obj == steel_attribute_obj, Steel.name != config.obj.name) \
+            .all()
+
+    return object_distractors, object_possible_keys
+
+
+# Randomly choose several distractors and right answers from queried steel objects
+def generate_ao_co_distractors_and_keys(config):
+    object_distractors, object_possible_keys = get_ao_possible_answers(config)
+    if config.a_form == "choice":
+        config.final_key = [config.obj.name]
+        random.shuffle(object_distractors)
+        config.final_distractors = config.final_key + [steel.name for steel in object_distractors[:4]]
+
+    else:
+        distractor_num = random.randint(0, 4)
+        random.shuffle(object_distractors)
+        random.shuffle(object_possible_keys)
+        distractors = [steel.name for steel in object_distractors[:distractor_num]]
+        config.final_key = [config.obj.name] + [steel.name for steel in object_possible_keys[:4 - distractor_num]]
+        config.final_distractors = config.final_key + distractors

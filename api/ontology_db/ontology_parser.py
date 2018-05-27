@@ -140,7 +140,7 @@ def parse_insert_objects(file_name):
                 row_data_objs.append(value_obj)
 
         # saving steel object in DB
-        session.add(init_steel_object(steel_name, steel_guid, row_data_objs))
+        session.add(update_steel_object(Steel(steel_name, steel_guid), row_data_objs))
 
     # Save insert actions
     session.commit()
@@ -161,33 +161,24 @@ def define_object(i, file_name, current_value):
         class_guid = thesaurus.cell(row, col - 1).value
         value_obj = EntityClass(current_value, ClassGuid(class_guid))
 
-    elif i == 1:
-        value_obj = Gost(current_value)
-
-    elif i == 2:
-        value_obj = DeoxidizingType(current_value)
-
-    elif i == 3:
-        value_obj = QualityType(current_value)
-
-    elif i == 5:
-        value_obj = MinCarbonValue(current_value)
-
-    elif i == 6:
-        value_obj = MaxCarbonValue(current_value)
-
-    elif i == 7:
-        value_obj = MinMarganeseValue(current_value)
-
     else:
-        value_obj = MaxMarganeseValue(current_value)
+        objects = {
+            1: Gost(current_value),
+            2: DeoxidizingType(current_value),
+            3: QualityType(current_value),
+            5: MinCarbonValue(current_value),
+            6: MaxCarbonValue(current_value),
+            7: MinMarganeseValue(current_value),
+            8: MaxMarganeseValue(current_value)
+        }
+
+        value_obj = objects[i]
 
     return value_obj
 
 
 # Object init and data updating
-def init_steel_object(steel_name, steel_guid, row_data_objs):
-    steel_object = Steel(steel_name, steel_guid)
+def update_steel_object(steel_object, row_data_objs):
     steel_object.entity_class = row_data_objs[0]
     steel_object.gost = row_data_objs[1]
     steel_object.deoxidizing_type = row_data_objs[2]
