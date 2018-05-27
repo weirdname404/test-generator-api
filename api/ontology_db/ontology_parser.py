@@ -74,13 +74,21 @@ def print_scales():
         print([value.value for value in scale.values], '\n')
 
 
+class SavedObjects:
+    dict = {}
+    file_name = ''
+
+    def __init__(self, file_name):
+        self.file_name = file_name
+
+
 # Parsing and inserting data about Steel Objects from the ontology file ('MVContext')
 def parse_insert_objects(file_name):
     # Load in the ontology
     ws = load_workbook(file_name)['MVContext']
 
     # The main idea is to reuse already created objects, which will be contained in the dict 
-    value_objects = {}
+    saved_objects = SavedObjects(file_name)
 
     for row in ws.iter_rows(min_row=2, max_col=MAX_SCALES + 1, max_row=MAX_OBJS):
         """
@@ -113,31 +121,7 @@ def parse_insert_objects(file_name):
         
         Ontology is parsed ONCE.
         """
-
-        row_data_objs = []
-
-        for i in range(len(row_data)):
-            current_value = row_data[i]
-
-            # check if there are any keys, if not - create
-            if i not in value_objects:
-                value_objects[i] = {}
-
-            # current_value is a "Element1, Element3, Element3 ..." - special treatment is required
-            if i == 4:
-                # Alloying_elements must be a list of objects - [obj1, obj2, obj3]
-                row_data_objs.append(parse_alloying_elements(value_objects, current_value, i))
-                continue
-
-            # the case when value class was already instantiated in the past, so we should use existing object
-            if current_value in value_objects[i]:
-                row_data_objs.append(value_objects[i][current_value])
-
-            # in other cases, let's create a value obj and use it in the future
-            else:
-                value_obj = define_object(i, file_name, current_value)
-                value_objects[i][current_value] = value_obj
-                row_data_objs.append(value_obj)
+        row_data_objs = define_values(saved_objects, row_data)
 
         # saving steel object in DB
         session.add(update_steel_object(Steel(steel_name, steel_guid), row_data_objs))
@@ -147,6 +131,37 @@ def parse_insert_objects(file_name):
     session.close()
 
     print('Objects are successfully parsed and moved to db\n')
+
+
+def define_values(saved_objects, row_data):
+    value_objects = saved_objects.dict
+    file_name = saved_objects.file_name
+    row_data_objs = []
+
+    for i in range(len(row_data)):
+        current_value = row_data[i]
+
+        # check if there are any keys, if not - create
+        if i not in value_objects:
+            value_objects[i] = {}
+
+        # current_value is a "Element1, Element3, Element3 ..." - special treatment is required
+        if i == 4:
+            # Alloying_elements must be a list of objects - [obj1, obj2, obj3]
+            row_data_objs.append(parse_alloying_elements(value_objects, current_value, i))
+            continue
+
+        # the case when value class was already instantiated in the past, so we should use existing object
+        if current_value in value_objects[i]:
+            row_data_objs.append(value_objects[i][current_value])
+
+        # in other cases, let's create a value obj and use it in the future
+        else:
+            value_obj = define_object(i, file_name, current_value)
+            value_objects[i][current_value] = value_obj
+            row_data_objs.append(value_obj)
+
+    return row_data_objs
 
 
 # steel attributes init
@@ -161,11 +176,17 @@ def define_object(i, file_name, current_value):
         class_guid = thesaurus.cell(row, col - 1).value
         value_obj = EntityClass(current_value, ClassGuid(class_guid))
 
+    elif i == 1:
+        value_obj = Gost(current_value)
+
+    elif i == 2:
+        value_obj = DeoxidizingType(current_value)
+
+    elif i == 3:
+        value_obj = QualityType(current_value)
+
     else:
         objects = {
-            1: Gost(current_value),
-            2: DeoxidizingType(current_value),
-            3: QualityType(current_value),
             5: MinCarbonValue(current_value),
             6: MaxCarbonValue(current_value),
             7: MinMarganeseValue(current_value),
