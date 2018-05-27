@@ -90,10 +90,12 @@ def define(request_code, steel_object, attribute_name):
         'Характеристика качества': [steel_object.quality, Steel.quality, [steel_object.quality.name]],
         'ГОСТ сплава': [steel_object.gost, Steel.gost, [steel_object.gost.name]],
 
-        'углерода': [steel_object.min_carbon_value, Steel.min_carbon_value,
+        'углерода': [[steel_object.min_carbon_value, steel_object.max_carbon_value],
+                     [Steel.min_carbon_value, Steel.max_carbon_value],
                      [steel_object.min_carbon_value.value + '-' + steel_object.max_carbon_value.value]],
 
-        'марганца': [steel_object.min_marganese_value, Steel.min_marganese_value,
+        'марганца': [[steel_object.min_marganese_value, steel_object.max_marganese_value],
+                     [Steel.min_marganese_value, Steel.max_marganese_value],
                      [steel_object.min_marganese_value.value + '-' + steel_object.max_marganese_value.value]]
     }
 
@@ -134,13 +136,20 @@ def generate_test_item(config):
         if (config.q_type == 'O>A' or config.q_type == 'A>O') and shorten_generation_process(config):
             return generate_stem(config), config.final_distractors, config.final_key
 
+    generator_manager(config)
+
+    return generate_stem(config), config.final_distractors, config.final_key
+
+
+def generator_manager(config):
     if config.q_type == 'O>A':
         generate_oa_distractors_and_answers(config)
 
     elif config.q_type == 'A>O':
         generate_ao_distractors_and_answers(config)
 
-    return generate_stem(config), config.final_distractors, config.final_key
+    elif config.q_type == 'O>A>O':
+        generate_oao_distractors_and_answers(config)
 
 
 # Distractors and keys generation for all answer forms (binary, choice, options), for O>A question type
@@ -206,11 +215,11 @@ def generate_ao_distractors_and_answers(config):
 
     else:
         config.answer_option = ', '.join(i for i in config.key_scale_value)
-        generate_ao_co_distractors_and_keys(config)
+        generate_ao_options(config)
 
 
 # Get STEEL OBJECTS which can distract or be the right answer
-def get_ao_possible_answers(config):
+def get_object_possible_answers(config):
     steel_attribute_obj = define(SA_OBJ, config.obj, config.attr.name)
     db_steel_attribute_obj = define(SA_CLASS, config.obj, config.attr.name)
 
@@ -235,17 +244,70 @@ def get_ao_possible_answers(config):
 
 
 # Randomly choose several distractors and right answers from queried steel objects
-def generate_ao_co_distractors_and_keys(config):
-    object_distractors, object_possible_keys = get_ao_possible_answers(config)
+def generate_ao_options(config):
+    object_distractors, object_possible_keys = get_object_possible_answers(config)
     if config.a_form == "choice":
-        config.final_key = [config.obj.name]
-        random.shuffle(object_distractors)
-        config.final_distractors = config.final_key + [steel.name for steel in object_distractors[:4]]
+        generate_object_choice(config, [config.obj.name], object_distractors)
 
     else:
-        distractor_num = random.randint(0, 4)
-        random.shuffle(object_distractors)
-        random.shuffle(object_possible_keys)
-        distractors = [steel.name for steel in object_distractors[:distractor_num]]
-        config.final_key = [config.obj.name] + [steel.name for steel in object_possible_keys[:4 - distractor_num]]
+        distractor_num, distractors, possible_keys = shuffle_and_slice(object_distractors, object_possible_keys)
+        config.final_key = [config.obj.name] + [steel.name for steel in possible_keys[:4 - distractor_num]]
+        config.final_distractors = config.final_key + distractors
+
+
+# Helpful unit to generate and define distractors and key for CHOICE answer form
+def generate_object_choice(config, key, object_distractors):
+    config.final_key = key
+    random.shuffle(object_distractors)
+    distractors_num = 5 if len(key) == 0 else 4
+    config.final_distractors = config.final_key + [steel.name for steel in object_distractors[:distractors_num]]
+
+
+# Helpful unit to shuffle and slice object collections
+def shuffle_and_slice(object_distractors, object_possible_keys):
+    distractor_num = 5 if len(object_possible_keys) == 0 else random.randint(0, 4)
+    random.shuffle(object_distractors)
+    random.shuffle(object_possible_keys)
+    distractors = [steel.name for steel in object_distractors[:distractor_num]]
+
+    return distractor_num, distractors, object_possible_keys
+
+
+# Distractors and keys generation for all answer forms (binary, choice, options), for O>A>O question type
+def generate_oao_distractors_and_answers(config):
+    object_distractors, object_possible_keys = get_object_possible_answers(config)
+    distractors = [object_distractors, object_possible_keys]
+
+    if config.a_form == 'binary':
+        generate_oao_binary(config, distractors)
+
+    else:
+        generate_oao_options(config, distractors)
+
+
+def generate_oao_binary(config, distractors):
+    object_distractors, object_possible_keys = distractors[0], distractors[1]
+    config.final_distractors = ['Да', 'Нет']
+
+    config.positive = False if len(object_possible_keys) < 1 else config.positive
+
+    if config.positive:
+        config.answer_option = random.choice(object_possible_keys).name
+        config.final_key = config.final_distractors[0]
+
+    else:
+        config.answer_option = random.choice(object_distractors).name
+        config.final_key = config.final_distractors[1]
+
+
+def generate_oao_options(config, distractors):
+    object_distractors, object_possible_keys = distractors[0], distractors[1]
+
+    if config.a_form == 'choice':
+        key = object_possible_keys if len(object_possible_keys) == 0 else [random.choice(object_possible_keys).name]
+        generate_object_choice(config, key, object_distractors)
+
+    else:
+        distractor_num, distractors, possible_keys = shuffle_and_slice(object_distractors, object_possible_keys)
+        config.final_key = [steel.name for steel in possible_keys[:5 - distractor_num]]
         config.final_distractors = config.final_key + distractors

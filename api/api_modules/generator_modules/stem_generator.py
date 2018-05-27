@@ -4,20 +4,19 @@ import random
 
 
 def generate_stem(config):
-    stem = ''
+    if config.q_type == 'O>A':
+        stem = generate_oa_stem(config)
 
-    stem_generation = {
-        'O>A': generate_oa_stem(config),
-        'A>O': generate_ao_stem(config)
-    }
+    elif config.q_type == 'A>O':
+        stem = generate_ao_stem(config)
 
-    if config.q_type == 'O>A>O':
-        pass
+    elif config.q_type == 'O>A>O':
+        stem = generate_oao_stem(config)
 
     else:
-        pass
+        stem = ''
 
-    return stem_generation[config.q_type]
+    return stem
 
 
 def generate_oa_stem(config):
@@ -117,8 +116,80 @@ def get_ao_else_stem(config):
     return stem
 
 
+def generate_oao_stem(config):
+    return get_oao_binary_stem(config) if config.a_form == 'binary' else get_oao_else_stem(config)
+
+
+def get_oao_binary_stem(config):
+    attribute, answer_option = config.attr, config.answer_option
+    start = 'Верно ли, что сталь'
+
+    if attribute.name == 'Способ раскисления':
+        stem = f"{start} {config.obj.name} одинакова по способу раскисления со сталью {answer_option}?"
+
+    elif attribute.name == 'Содержание легирующих элементов':
+        stem = f"{start} {config.obj.name} одинакова по содержанию легирующих элементов со сталью {answer_option}?"
+
+    elif attribute.name == 'Характеристика качества':
+        stem = f"{start} {config.obj.name} одинакова по характеристике качества со сталью {answer_option}?"
+
+    elif attribute.name == 'ГОСТ сплава':
+        stem = f"{start} {config.obj.name} входит в тот же ГОСТ, что и сталь {answer_option}?"
+
+    else:
+        stem = f"{start} {config.obj.name} равна по массовой доле {attribute.name.split()[2]} со сталью " + \
+               f"{answer_option}?"
+
+    return stem
+
+
+def get_oao_else_stem(config):
+    attribute, answer_option = config.attr, config.answer_option
+
+    if attribute.name == 'Способ раскисления':
+        stem = f"{generate_synonym('verb')} марки стали, которые по способу раскисления одинаковы со сталью " + \
+               f"{config.obj.name}:"
+
+    elif attribute.name == 'Содержание легирующих элементов':
+        stem = f"{generate_synonym('verb')} марки стали, которые по содержанию легирующих элементов одинаковы со " + \
+               f"сталью {config.obj.name}:"
+
+    elif attribute.name == 'Характеристика качества':
+        stem = f"{generate_synonym('verb')} марки стали, которые по характеристике качества одинаковы со сталью " + \
+               f"{config.obj.name}:"
+
+    elif attribute.name == 'ГОСТ сплава':
+        stem = f"{generate_synonym('verb')} марки стали, входят в тот же ГОСТ, что и сталь {config.obj.name}:"
+
+    else:
+        stem = f"{generate_synonym('verb')} марки стали, которые по массовой доле {attribute.name.split()[2]} " + \
+               f"одинаковы со сталью {config.obj.name}:"
+
+    return stem
+
+
 def generate_synonym(word):
     verb = ['Определите', 'Укажите', 'Выберите', 'Назовите']
     adjective = []
     word_dict = {'verb': verb, 'adj': adjective}
     return random.choice(word_dict[word])
+
+# def get_anything_stem(config):
+#     attribute, answer_option = config.attr, config.answer_option
+#
+#     if attribute.name == 'Способ раскисления':
+#         stem = f""
+#
+#     elif attribute.name == 'Содержание легирующих элементов':
+#         stem = f""
+#
+#     elif attribute.name == 'Характеристика качества':
+#         stem = f""
+#
+#     elif attribute.name == 'ГОСТ сплава':
+#         stem = f""
+#
+#     else:
+#         stem = f""
+#
+#     return stem
