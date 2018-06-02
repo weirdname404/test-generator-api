@@ -159,7 +159,7 @@ def get_oao_else_stem(config):
                f"{config.obj.name}:"
 
     elif attribute.name == 'ГОСТ сплава':
-        stem = f"{generate_synonym('verb')} марки стали, входят в тот же ГОСТ, что и сталь {config.obj.name}:"
+        stem = f"{generate_synonym('verb')} марки стали, которые входят в тот же ГОСТ, что и сталь {config.obj.name}:"
 
     else:
         stem = f"{generate_synonym('verb')} марки стали, которые по массовой доле {attribute.name.split()[2]} " + \

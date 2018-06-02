@@ -49,9 +49,10 @@ def generate_test(test_requirements):
 
 # randomly choose params from the request
 def make_random_choice(test_requirements):
-    return random.choice(test_requirements.request_question_types), random.choice(
-        test_requirements.request_answer_forms), random.choice(test_requirements.request_entities1), random.choice(
-        test_requirements.request_entities2)
+    inputs_list = [test_requirements.request_question_types, test_requirements.request_answer_forms,
+                   test_requirements.request_entities1, test_requirements.request_entities2]
+
+    return map(random.choice, inputs_list)
 
 
 # define the Steel and Scale objects
@@ -164,8 +165,7 @@ def generate_oa_distractors_and_answers(config):
 
     # Choice or options
     else:
-        random.shuffle(distractors)
-        distractors = distractors[:4]
+        distractors = random.sample(distractors, k=4)
         config.scale_value_distractors = generate_min_max_distractors(distractors, attribute)
         config.final_key = config.key_scale_value if config.a_form == 'options' \
             else [random.choice(config.key_scale_value)]
