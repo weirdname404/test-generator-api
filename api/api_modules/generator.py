@@ -1,6 +1,7 @@
 # coding=utf-8
 import random
 import uuid
+import time
 
 from api.ontology_db.db_config.base import Base, Session, engine
 from api.ontology_db.entities.scales import Scale
@@ -22,6 +23,7 @@ KEY = 'key'
 
 # main generator func
 def generate_test(test_requirements):
+    start_time = time.time()
     all_tests = []
     # let's check do we support requested question type or not
     for i in test_requirements.request_question_types:
@@ -43,6 +45,8 @@ def generate_test(test_requirements):
         test['stem'], test['distractors'], test['key'] = generate_test_item(config)
 
         all_tests.append(test)
+
+    print(f"--- {time.time() - start_time} seconds ---")
 
     return all_tests
 
