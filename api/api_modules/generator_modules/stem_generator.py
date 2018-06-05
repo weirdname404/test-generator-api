@@ -30,7 +30,7 @@ def generate_oa_stem(config):
 
             'Характеристика качества': f"Верно ли, что сталь {config.obj.name} {answer_option}?",
 
-            'ГОСТ сплава': f"Входит ли сталь {config.obj.name} в {answer_option.upper()}?"
+            'ГОСТ сплава': f"Входит ли сталь {config.obj.name} входит в {answer_option.upper()}?"
         },
         'choice&options': {
             'Способ раскисления': f"Охарактеризуйте с точки зрения способа раскисления сталь {config.obj.name}:",
