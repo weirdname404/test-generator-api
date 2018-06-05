@@ -18,7 +18,10 @@ class Config:
         self.scale_value_distractors = []
         self.positive = True
         self.answer_option = ''
-        self.obj2 = Steel
-        self.attr2 = Scale
+        self.obj2 = ''
+        self.attr2 = ''
         self.final_key = []
         self.final_distractors = []
+        self.scale_attributes = []
+        self.steel_attributes = []
+        self.support_index = 0

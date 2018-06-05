@@ -9,7 +9,8 @@ from api.ontology_db.entities.entity_class import EntityClass
 from api.ontology_db.entities.scales import Scale
 from api.ontology_db.entities.steel import Steel
 from api.ontology_db.ontology_parser import parse_ontology, drop_ontology as drop_onto
-from api.api_modules.generator import generate_test as generate_tests
+from api.api_modules.generator import generate_test as generate_test_ordinary
+from api.api_modules.generator_fca import generate_test_fca as generate_items_fca
 from api.api_modules.requirements_class import TestRequirements
 
 # creating the Flask application
@@ -75,6 +76,16 @@ def hello():
 # a proper request in a JSON format is required
 @app.route('/generate-test', methods=['POST'])
 def generate_test():
+    api_response, test_requirements = get_json_request()
+    if test_requirements == 400:
+        return api_response, test_requirements
+
+    api_response['questions'] = generate_test_ordinary(test_requirements)
+
+    return jsonify(api_response)
+
+
+def get_json_request():
     try:
         api_response = {'request_info': request.get_json()}
         test_requirements_json = api_response['request_info']['test_requirements']
@@ -103,7 +114,16 @@ def generate_test():
     except TypeError:
         return f'\nThe request is invalid. {error_value} does not exist in the ontology\n', 400
 
-    api_response['questions'] = generate_tests(test_requirements)
+    return api_response, test_requirements
+
+
+@app.route('/generate-test-fca', methods=['POST'])
+def generate_test_fca():
+    api_response, test_requirements = get_json_request()
+    if test_requirements == 400:
+        return api_response, test_requirements
+
+    api_response['questions'] = generate_items_fca(test_requirements)
 
     return jsonify(api_response)
 
