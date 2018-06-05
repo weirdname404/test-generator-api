@@ -16,6 +16,8 @@ codecov = "*"
 pytest-cov = "*"
 coverage = "*"
 markdown = "*"
+concepts = "*"
+pydot = "*"
 
 [requires]
 python_version = "3.6"
